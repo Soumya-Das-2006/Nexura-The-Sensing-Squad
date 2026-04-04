@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ post.title }} — Nexura Blog{% endblock %}
+{% block content %}
+{% include "includes/_breadcrumb.html" with title=post.title %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <article class="bg-white rounded-4 p-5 shadow-sm">
+                <img src="{{ post.cover_image_url }}" class="img-fluid rounded mb-4 w-100" alt="{{ post.title }}" style="height: 400px; object-fit: cover;">
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <span class="badge bg-primary rounded-pill px-3 py-2">{{ post.get_category_display }}</span>
+                    <span class="text-muted small"><i class="fa fa-calendar text-primary me-1"></i>{{ post.published_at|date:"d M Y" }}</span>
+                    <span class="text-muted small"><i class="fa fa-clock text-primary me-1"></i>{{ post.published_at|date:"h:i A"|default:"12:00 PM" }}</span>
+                    <span class="text-muted small"><i class="fa fa-user text-primary me-1"></i>{{ post.author_name|default:"Admin" }}</span>
+                </div>
+
+                <h1 class="display-6 fw-bold mb-4">{{ post.title }}</h1>
+
+                {% if post.excerpt %}
+                <div class="alert alert-light border-0 mb-4 p-4">
+                    <p class="mb-0 text-muted lead">{{ post.excerpt }}</p>
+                </div>
+                {% endif %}
+
+                <div class="text-muted" style="line-height:1.9;">{{ post.content|linebreaks }}</div>
+            </article>
+        </div>
+    </div>
+    {% if related %}
+    <div class="mt-5">
+        <h4 class="fw-bold mb-4">Related Articles</h4>
+        <div class="row g-4">
+            {% for p in related %}
+            <div class="col-md-4">
+                <div class="blog-item">
+                    <div class="blog-content p-4 bg-light rounded">
+                        <a href="{% url 'core:blog_post' p.slug %}" class="h6 d-block mb-2">{{ p.title }}</a>
+                        <p class="text-muted small mb-0">{{ p.excerpt|truncatechars:90 }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

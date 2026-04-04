@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}How Nexura Works — Parametric Insurance Explained{% endblock %}
+{% block nav_how %}active{% endblock %}
+
+{% block content %}
+
+{% include "includes/_breadcrumb.html" with title="How It Works" subtitle="Zero-touch income protection in 7 steps" %}
+
+<!-- ── Steps Timeline ── -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="text-center mx-auto pb-5" style="max-width: 700px;">
+            <h4 class="text-primary text-uppercase small fw-bold">The Nexura Flow</h4>
+            <h2 class="display-5 fw-bold mb-3">From Disruption to Payout — Fully Automatic</h2>
+            <p class="text-muted">Every step from registration to payout is handled by our AI engine. You never need to file a claim.</p>
+        </div>
+
+        {% for step in steps %}
+        <div class="row g-5 align-items-center mb-5 wow fadeInUp {% if forloop.counter|divisibleby:2 %}flex-lg-row-reverse{% endif %}">
+            <!-- Icon column -->
+            <div class="col-lg-3 text-center">
+                <div class="position-relative d-inline-block">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                        style="width:100px;height:100px;background-color:#eef2f7;">
+                        <i class="{{ step.icon }} fa-3x text-{{ step.color }}"></i>
+                    </div>
+                    <div class="position-absolute top-0 start-0 bg-{{ step.color }} text-white rounded-circle d-flex align-items-center justify-content-center fw-black"
+                         style="width:32px;height:32px;font-size:14px;">
+                        {{ step.number }}
+                    </div>
+                </div>
+            </div>
+            <!-- Content column -->
+            <div class="col-lg-9">
+                <div class="ps-lg-4">
+                    <span class="badge border border-{{ step.color }} text-{{ step.color }} bg-white rounded-pill px-3 py-2 mb-3 small fw-semibold">
+                        Step {{ step.number }}
+                    </span>
+                    <h3 class="fw-bold mb-3">{{ step.title }}</h3>
+                    <p class="text-muted fs-5 mb-0">{{ step.description }}</p>
+                </div>
+            </div>
+        </div>
+        {% if not forloop.last %}
+        <div class="text-center mb-5">
+            <i class="fas fa-arrow-down fa-2x text-muted"></i>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+    </div>
+</div>
+
+<!-- ── Technical Architecture ── -->
+<div class="container-fluid bg-light py-5">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h4 class="text-primary text-uppercase small fw-bold mb-2">Under the Hood</h4>
+            <h2 class="display-5 fw-bold">The Technology Behind Nexura</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="nexura-stat-card text-center h-100">
+                    <div class="stat-icon bg-primary-soft mx-auto mb-3">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h6 class="fw-bold">XGBoost Risk Model</h6>
+                    <p class="text-muted small mb-0">44 features. Recalculates your premium every Sunday at 8 PM based on your zone's weather history.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 wow fadeInUp" data-wow-delay="0.2s">
+                <div class="nexura-stat-card text-center h-100">
+                    <div class="stat-icon bg-danger-soft mx-auto mb-3">
+                        <i class="fas fa-user-secret"></i>
+                    </div>
+                    <h6 class="fw-bold">Isolation Forest Fraud</h6>
+                    <p class="text-muted small mb-0">ML fraud detection. Claims under 0.50 auto-approve. 0.50–0.70 held for review. Above 0.70 auto-reject.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="nexura-stat-card text-center h-100">
+                    <div class="stat-icon bg-success-soft mx-auto mb-3">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h6 class="fw-bold">Prophet Forecasting</h6>
+                    <p class="text-muted small mb-0">28 pre-trained Prophet models predict next week's disruption risk for all 7 cities across 4 metrics.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 wow fadeInUp" data-wow-delay="0.4s">
+                <div class="nexura-stat-card text-center h-100">
+                    <div class="stat-icon bg-warning-soft mx-auto mb-3">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <h6 class="fw-bold">Razorpay Payouts API</h6>
+                    <p class="text-muted small mb-0">Direct UPI transfer via Razorpay's Payouts API. UTR number confirmed. WhatsApp notification sent.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── CTA ── -->
+<div class="container-fluid py-5">
+    <div class="container py-4 text-center">
+        <h2 class="display-5 fw-bold mb-3">Ready to Get Protected?</h2>
+        <p class="text-muted fs-5 mb-4">Registration takes 3 minutes. First week's premium via UPI.</p>
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary rounded-pill py-3 px-5 fw-semibold fs-5">
+            <i class="fas fa-shield-alt me-2"></i>Get Protected — ₹29/week
+        </a>
+    </div>
+</div>
+
+{% endblock %}

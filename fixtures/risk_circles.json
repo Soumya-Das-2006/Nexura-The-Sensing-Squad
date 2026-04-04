@@ -1,0 +1,184 @@
+[
+  {
+    "model": "circles.riskcircle",
+    "pk": 1,
+    "fields": {
+      "zone": 1,
+      "name": "Andheri West Riders",
+      "description": "Delivery riders covering Andheri West, DN Nagar, and Lokhandwala.",
+      "pool_balance": "1850.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 2,
+    "fields": {
+      "zone": 4,
+      "name": "Central Mumbai Shield",
+      "description": "Workers across Dadar, Parel, and Lower Parel.",
+      "pool_balance": "2100.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 3,
+    "fields": {
+      "zone": 5,
+      "name": "Kurla Express Circle",
+      "description": "Kurla, Chunabhatti, and Chembur delivery community.",
+      "pool_balance": "950.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 4,
+    "fields": {
+      "zone": 13,
+      "name": "Delhi Central Guard",
+      "description": "CP, Rajiv Chowk, and Patel Chowk delivery riders.",
+      "pool_balance": "1600.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 5,
+    "fields": {
+      "zone": 20,
+      "name": "Karol Bagh Crew",
+      "description": "Karol Bagh, Patel Nagar, and Rajender Nagar workers.",
+      "pool_balance": "1200.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 6,
+    "fields": {
+      "zone": 25,
+      "name": "East Delhi Riders",
+      "description": "Shahdara, Vivek Vihar, and Preet Vihar community.",
+      "pool_balance": "880.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 7,
+    "fields": {
+      "zone": 27,
+      "name": "Koramangala Cluster",
+      "description": "Koramangala, Indiranagar, and Domlur gig workers.",
+      "pool_balance": "1400.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 8,
+    "fields": {
+      "zone": 30,
+      "name": "East Bangalore Fleet",
+      "description": "Marathahalli, Whitefield, and Brookefield delivery team.",
+      "pool_balance": "1750.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 9,
+    "fields": {
+      "zone": 37,
+      "name": "T Nagar Delivery Guild",
+      "description": "T Nagar, Nungambakkam, and Teynampet workers.",
+      "pool_balance": "1100.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 10,
+    "fields": {
+      "zone": 39,
+      "name": "South Chennai Shield",
+      "description": "Velachery, Adyar, and Sholinganallur riders.",
+      "pool_balance": "920.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 11,
+    "fields": {
+      "zone": 46,
+      "name": "Hitech City Warriors",
+      "description": "HITEC City, Kondapur, and Gachibowli tech corridor workers.",
+      "pool_balance": "1650.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 12,
+    "fields": {
+      "zone": 52,
+      "name": "South Hyderabad Circle",
+      "description": "Dilsukhnagar, LB Nagar, and Kothapet delivery riders.",
+      "pool_balance": "750.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 13,
+    "fields": {
+      "zone": 54,
+      "name": "Kolkata Park Street Guild",
+      "description": "Park Street, Esplanade, and BBD Bagh area workers.",
+      "pool_balance": "1300.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "circles.riskcircle",
+    "pk": 14,
+    "fields": {
+      "zone": 64,
+      "name": "Kothrud Riders Circle",
+      "description": "Kothrud, Karve Nagar, and Warje delivery community.",
+      "pool_balance": "880.00",
+      "max_members": 20,
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  }
+]

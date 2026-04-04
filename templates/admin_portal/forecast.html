@@ -1,0 +1,117 @@
+{% extends "base_admin.html" %}
+{% load static %}
+{% block title %}Forecast Overview — Admin | Nexura{% endblock %}
+{% block page_title %}Forecast Overview{% endblock %}
+{% block page_subtitle %}Week of {{ week_start|date:"d M Y" }} — Prophet model predictions{% endblock %}
+{% block admin_nav_forecast %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-end mb-4">
+    <button onclick="regenerateForecasts()" class="btn btn-primary rounded-pill px-4">
+        <i class="fas fa-sync-alt me-2"></i>Regenerate All Forecasts
+    </button>
+</div>
+
+{% if forecasts %}
+<div class="row g-4">
+    {% for fc in forecasts %}
+    <div class="col-md-6 col-lg-4">
+        <div class="nexura-stat-card h-100">
+
+            <!-- Header -->
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="stat-icon
+                    {% if fc.risk_color == 'success' %}bg-success-soft
+                    {% elif fc.risk_color == 'warning' %}bg-warning-soft
+                    {% else %}bg-danger-soft{% endif %}">
+                    <i class="{{ fc.risk_icon }}
+                       text-{{ fc.risk_color }}"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">{{ fc.zone.city }}</h6>
+                    <span class="forecast-risk-badge {{ fc.overall_risk_level|lower }}">
+                        {{ fc.overall_risk_level }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Probability bars -->
+            <div class="forecast-bar-container">
+                <div class="forecast-day-row">
+                    <span class="forecast-day-label"><i class="fas fa-cloud-showers-heavy text-primary" style="font-size:12px;"></i></span>
+                    <div class="forecast-bar-track">
+                        <div class="forecast-bar-fill {% if fc.rain_probability > 0.6 %}high{% elif fc.rain_probability > 0.3 %}moderate{% else %}low{% endif %}"
+                             style="width:{{ fc.rain_probability|floatformat:0 }}0%"></div>
+                    </div>
+                    <span class="text-muted small">{{ fc.rain_probability|floatformat:0 }}0%</span>
+                </div>
+                <div class="forecast-day-row">
+                    <span class="forecast-day-label"><i class="fas fa-thermometer-full text-danger" style="font-size:12px;"></i></span>
+                    <div class="forecast-bar-track">
+                        <div class="forecast-bar-fill {% if fc.heat_probability > 0.6 %}high{% elif fc.heat_probability > 0.3 %}moderate{% else %}low{% endif %}"
+                             style="width:{{ fc.heat_probability|floatformat:0 }}0%"></div>
+                    </div>
+                    <span class="text-muted small">{{ fc.heat_probability|floatformat:0 }}0%</span>
+                </div>
+                <div class="forecast-day-row">
+                    <span class="forecast-day-label"><i class="fas fa-smog text-warning" style="font-size:12px;"></i></span>
+                    <div class="forecast-bar-track">
+                        <div class="forecast-bar-fill {% if fc.aqi_probability > 0.6 %}high{% elif fc.aqi_probability > 0.3 %}moderate{% else %}low{% endif %}"
+                             style="width:{{ fc.aqi_probability|floatformat:0 }}0%"></div>
+                    </div>
+                    <span class="text-muted small">{{ fc.aqi_probability|floatformat:0 }}0%</span>
+                </div>
+            </div>
+
+            <!-- Raw values -->
+            <div class="d-flex gap-3 mt-3 pt-3" style="border-top:1px solid #e2e8f0;">
+                <div class="text-center flex-fill">
+                    <p class="text-muted mb-0" style="font-size:10px;">RAIN</p>
+                    <p class="fw-bold mb-0 small">{{ fc.forecasted_rain_mm|floatformat:1 }}mm</p>
+                </div>
+                <div class="text-center flex-fill">
+                    <p class="text-muted mb-0" style="font-size:10px;">TEMP</p>
+                    <p class="fw-bold mb-0 small">{{ fc.forecasted_temp_c|floatformat:1 }}°C</p>
+                </div>
+                <div class="text-center flex-fill">
+                    <p class="text-muted mb-0" style="font-size:10px;">AQI</p>
+                    <p class="fw-bold mb-0 small">{{ fc.forecasted_aqi|floatformat:0 }}</p>
+                </div>
+                <div class="text-center flex-fill">
+                    <p class="text-muted mb-0" style="font-size:10px;">DISRUPT</p>
+                    <p class="fw-bold mb-0 small">{{ fc.disruption_probability|floatformat:0 }}0%</p>
+                </div>
+            </div>
+            <p class="text-muted mt-2 mb-0" style="font-size:10px;">
+                Generated {{ fc.generated_at|date:"d M H:i" }}
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="nexura-stat-card text-center py-5">
+    <i class="fas fa-cloud-sun-rain fa-4x text-muted mb-3"></i>
+    <h5 class="text-muted">No forecasts generated yet</h5>
+    <p class="text-muted mb-4">Click "Regenerate All Forecasts" to run the Prophet models.</p>
+    <button onclick="regenerateForecasts()" class="btn btn-primary rounded-pill px-5">
+        Generate Now
+    </button>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function regenerateForecasts() {
+    if (!confirm('Run all 27 Prophet models now? This takes ~30 seconds.')) return;
+    fetch('/api/v1/forecasting/generate/', {
+        method: 'POST',
+        headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json'},
+    })
+    .then(r => r.json())
+    .then(d => { alert('Task queued: ' + (d.message || JSON.stringify(d))); })
+    .catch(() => alert('Error queuing forecast generation.'));
+}
+</script>
+{% endblock %}

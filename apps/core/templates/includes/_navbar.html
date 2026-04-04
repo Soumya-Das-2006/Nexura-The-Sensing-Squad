@@ -1,0 +1,118 @@
+{% load static %}
+<!-- ── Navbar ── -->
+<div class="container-fluid nav-bar px-0 px-lg-4 py-lg-0">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light">
+
+            <!-- Brand -->
+            <a href="{% url 'core:home' %}" class="navbar-brand p-0">
+                <h1 class="text-primary mb-0 d-flex align-items-center gap-2">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Nexura</span>
+                </h1>
+            </a>
+
+            <!-- Mobile toggler -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nexuraNav" aria-controls="nexuraNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="fa fa-bars"></span>
+            </button>
+
+            <!-- Nav links -->
+            <div class="collapse navbar-collapse" id="nexuraNav">
+                <div class="navbar-nav mx-0 mx-lg-auto">
+
+                    <!-- Home -->
+                    <a href="{% url 'core:home' %}"
+                       class="nav-item nav-link {% block nav_home %}{% endblock %}">
+                        Home
+                    </a>
+
+                    <!-- About -->
+                    <a href="{% url 'core:about' %}"
+                       class="nav-item nav-link {% block nav_about %}{% endblock %}">
+                        About
+                    </a>
+
+                    <!-- Plans -->
+                    <a href="{% url 'policies:plans' %}"
+                       class="nav-item nav-link {% block nav_plans %}{% endblock %}">
+                        Plans
+                    </a>
+
+                    <!-- How It Works -->
+                    <a href="{% url 'core:how_it_works' %}"
+                       class="nav-item nav-link {% block nav_how %}{% endblock %}">
+                        How It Works
+                    </a>
+
+                    <!-- More dropdown -->
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link" data-bs-toggle="dropdown">
+                            <span class="dropdown-toggle">More</span>
+                        </a>
+                        <div class="dropdown-menu">
+                            <a href="{% url 'core:features' %}" class="dropdown-item">
+                                <i class="fas fa-star text-primary me-2"></i>Features
+                            </a>
+                            <a href="{% url 'core:faq' %}" class="dropdown-item">
+                                <i class="fas fa-question-circle text-primary me-2"></i>FAQs
+                            </a>
+                            <a href="{% url 'core:blog' %}" class="dropdown-item">
+                                <i class="fas fa-blog text-primary me-2"></i>Blog
+                            </a>
+                            <a href="{% url 'core:cities' %}" class="dropdown-item">
+                                <i class="fas fa-city text-primary me-2"></i>Covered Cities
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Contact -->
+                    <a href="{% url 'core:contact' %}"
+                       class="nav-item nav-link {% block nav_contact %}{% endblock %}">
+                        Contact
+                    </a>
+
+                    <!-- CTA buttons -->
+                    <div class="nav-btn px-3">
+                        <button class="btn-search btn btn-primary btn-md-square rounded-circle flex-shrink-0"
+                                data-bs-toggle="modal" data-bs-target="#searchModal"
+                                aria-label="Search">
+                            <i class="fas fa-search"></i>
+                        </button>
+
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'workers:dashboard' %}"
+                               class="btn btn-primary rounded-pill py-2 px-4 ms-3 flex-shrink-0">
+                                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                            </a>
+                        {% else %}
+                            <a href="{% url 'accounts:register' %}"
+                               class="btn btn-primary rounded-pill py-2 px-4 ms-3 flex-shrink-0">
+                                Get Protected
+                            </a>
+                        {% endif %}
+                    </div>
+
+                </div><!-- /.navbar-nav -->
+            </div><!-- /.collapse -->
+
+            <!-- Desktop phone CTA (xl only) -->
+            <div class="d-none d-xl-flex flex-shrink-0 ps-4">
+                <a href="#" class="btn btn-light btn-lg-square rounded-circle position-relative wow tada" data-wow-delay=".9s">
+                    <i class="fa fa-phone-alt fa-2x"></i>
+                    <div class="position-absolute" style="top: 7px; right: 12px;">
+                        <span><i class="fa fa-comment-dots text-secondary"></i></span>
+                    </div>
+                </a>
+                <div class="d-flex flex-column ms-3">
+                    <span class="small text-muted">24/7 Support</span>
+                    <a href="tel:+918000000000">
+                        <span class="text-dark fw-semibold">+91 80000 00000</span>
+                    </a>
+                </div>
+            </div>
+
+        </nav>
+    </div>
+</div>
+<!-- ── Navbar End ── -->

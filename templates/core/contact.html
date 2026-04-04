@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Contact Nexura — Get in Touch{% endblock %}
+{% block nav_contact %}active{% endblock %}
+
+{% block content %}
+
+{% include "includes/_breadcrumb.html" with title="Contact Us" subtitle="We're here to help" %}
+
+<div class="container-fluid contact py-5">
+    <div class="container py-5">
+        <div class="row g-5">
+
+            <!-- Contact Info -->
+            <div class="col-lg-5 wow fadeInLeft">
+                <h4 class="text-primary fw-bold mb-4">Get in Touch</h4>
+                <p class="text-muted mb-5">
+                    Have questions about Nexura, your policy, or a pending payout?
+                    Our team responds within 24 hours on business days.
+                </p>
+
+                {% for office in offices %}
+                <div class="d-flex gap-3 mb-4">
+                    <div class="flex-shrink-0 bg-primary bg-opacity-10 rounded-circle d-flex
+                                align-items-center justify-content-center"
+                         style="width:52px;height:52px;">
+                        <i class="{{ office.icon }} text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">{{ office.city }}</h6>
+                        <p class="text-muted mb-0 small">{{ office.address }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="d-flex gap-3 mb-4">
+                    <div class="flex-shrink-0 bg-primary bg-opacity-10 rounded-circle d-flex
+                                align-items-center justify-content-center"
+                         style="width:52px;height:52px;">
+                        <i class="fas fa-envelope text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Email</h6>
+                        <a href="mailto:{{ nexura.support_email }}" class="text-muted small">
+                            {{ nexura.support_email }}
+                        </a>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 mb-4">
+                    <div class="flex-shrink-0 bg-success bg-opacity-10 rounded-circle d-flex
+                                align-items-center justify-content-center"
+                         style="width:52px;height:52px;">
+                        <i class="fab fa-whatsapp text-success fa-xl"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">WhatsApp Support</h6>
+                        <a href="https://wa.me/{{ nexura.whatsapp_number }}" target="_blank" class="text-muted small">
+                            {{ nexura.phone }}
+                        </a>
+                        <p class="text-muted mb-0" style="font-size: 11px;">9 AM – 9 PM IST, 7 days</p>
+                    </div>
+                </div>
+
+                <!-- Supported platforms strip -->
+                <div class="mt-5 p-4 bg-light rounded-3">
+                    <p class="fw-semibold mb-3 small">For urgent payout queries, mention your platform:</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for p in nexura.supported_platforms %}
+                        <span class="badge bg-white border text-dark px-3 py-2 rounded-pill" style="font-size: 12px;">
+                            {{ p }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="col-lg-7 wow fadeInRight">
+                <div class="bg-light rounded-4 p-5">
+                    <h4 class="fw-bold mb-4">Send Us a Message</h4>
+                    <form method="POST" action="{% url 'core:contact' %}">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Full Name *</label>
+                                <input type="text" name="full_name" class="form-control"
+                                       placeholder="Ravi Kumar" required
+                                       value="{{ request.POST.full_name|default:'' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Mobile Number</label>
+                                <input type="tel" name="mobile" class="form-control"
+                                       placeholder="+91 9XXXXXXXXX"
+                                       value="{{ request.POST.mobile|default:'' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Email Address *</label>
+                                <input type="email" name="email" class="form-control"
+                                       placeholder="ravi@email.com" required
+                                       value="{{ request.POST.email|default:'' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Subject *</label>
+                                <select name="subject" class="form-select" required>
+                                    <option value="">Select a topic…</option>
+                                    <option value="Payout Query">Payout Query</option>
+                                    <option value="Plan Information">Plan Information</option>
+                                    <option value="KYC Help">KYC / Registration Help</option>
+                                    <option value="Claim Status">Claim Status</option>
+                                    <option value="Technical Issue">Technical Issue</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">Message *</label>
+                                <textarea name="message" class="form-control" rows="5"
+                                          placeholder="Describe your query in detail…" required>{{ request.POST.message|default:'' }}</textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary rounded-pill py-3 px-5 fw-semibold w-100">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

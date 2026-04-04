@@ -1,0 +1,247 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Risk Forecast — Nexura{% endblock %}
+{% block page_title %}Weekly Risk Forecast{% endblock %}
+{% block page_subtitle %}{{ week_start|date:"d M" }} – {{ week_end|date:"d M Y" }} · Powered by Facebook Prophet{% endblock %}
+{% block sidebar_forecast %}active{% endblock %}
+
+{% block content %}
+
+<!-- ── Worker's Zone Forecast ─────────────────────────────────────────── -->
+{% if worker_forecast %}
+<div class="row g-4 mb-4">
+
+    <!-- Risk summary card -->
+    <div class="col-lg-4">
+        <div class="nexura-stat-card h-100 text-center p-5">
+            <p class="text-muted small text-uppercase fw-bold mb-3">
+                {{ worker_zone.display_name }}
+            </p>
+            <div class="mb-3">
+                <i class="{{ worker_forecast.risk_icon }} fa-4x
+                   {% if worker_forecast.risk_color == 'success' %}text-success
+                   {% elif worker_forecast.risk_color == 'warning' %}text-warning
+                   {% elif worker_forecast.risk_color == 'danger' %}text-danger
+                   {% else %}text-purple{% endif %}"></i>
+            </div>
+            <h2 class="fw-black mb-1
+               {% if worker_forecast.risk_color == 'success' %}text-success
+               {% elif worker_forecast.risk_color == 'warning' %}text-warning
+               {% elif worker_forecast.risk_color == 'danger' %}text-danger
+               {% else %}text-danger{% endif %}">
+                {{ worker_forecast.overall_risk_level }}
+            </h2>
+            <p class="text-muted mb-3">Overall risk this week</p>
+            <div class="d-flex flex-column gap-2">
+                <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-light">
+                    <span class="text-muted small"><i class="fas fa-cloud-showers-heavy text-primary me-2"></i>Rain</span>
+                    <strong class="small">{{ worker_forecast.rain_probability|floatformat:0 }}0%</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-light">
+                    <span class="text-muted small"><i class="fas fa-thermometer-full text-danger me-2"></i>Heat</span>
+                    <strong class="small">{{ worker_forecast.heat_probability|floatformat:0 }}0%</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-light">
+                    <span class="text-muted small"><i class="fas fa-smog text-warning me-2"></i>AQI</span>
+                    <strong class="small">{{ worker_forecast.aqi_probability|floatformat:0 }}0%</strong>
+                </div>
+            </div>
+            <p class="text-muted mt-3 mb-0" style="font-size:11px;">
+                Generated {{ worker_forecast.generated_at|date:"d M Y H:i" }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Detailed bars -->
+    <div class="col-lg-8">
+        <div class="nexura-stat-card h-100">
+            <h6 class="fw-bold mb-4">
+                <i class="fas fa-chart-bar text-primary me-2"></i>
+                Disruption Probability Breakdown
+            </h6>
+
+            {% with bars=worker_forecast %}
+
+            <!-- Rain -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-semibold small"><i class="fas fa-cloud-showers-heavy text-primary me-2"></i>Heavy Rain (&gt;35 mm/hr)</span>
+                    <span class="fw-bold small">{{ bars.rain_probability|floatformat:0 }}0%</span>
+                </div>
+                <div class="forecast-bar-track" style="height:14px;">
+                    <div class="forecast-bar-fill {% if bars.rain_probability > 0.6 %}high{% elif bars.rain_probability > 0.3 %}moderate{% else %}low{% endif %}"
+                         style="width:{{ bars.rain_probability|floatformat:0 }}0%"></div>
+                </div>
+                <p class="text-muted mt-1 mb-0" style="font-size:11px;">
+                    Forecasted: {{ bars.forecasted_rain_mm|floatformat:1 }} mm/hr avg
+                </p>
+            </div>
+
+            <!-- Heat -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-semibold small"><i class="fas fa-thermometer-full text-danger me-2"></i>Extreme Heat (&gt;42°C)</span>
+                    <span class="fw-bold small">{{ bars.heat_probability|floatformat:0 }}0%</span>
+                </div>
+                <div class="forecast-bar-track" style="height:14px;">
+                    <div class="forecast-bar-fill {% if bars.heat_probability > 0.6 %}high{% elif bars.heat_probability > 0.3 %}moderate{% else %}low{% endif %}"
+                         style="width:{{ bars.heat_probability|floatformat:0 }}0%"></div>
+                </div>
+                <p class="text-muted mt-1 mb-0" style="font-size:11px;">
+                    Forecasted: {{ bars.forecasted_temp_c|floatformat:1 }}°C peak temp
+                </p>
+            </div>
+
+            <!-- AQI -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-semibold small"><i class="fas fa-smog text-warning me-2"></i>Severe AQI (&gt;300)</span>
+                    <span class="fw-bold small">{{ bars.aqi_probability|floatformat:0 }}0%</span>
+                </div>
+                <div class="forecast-bar-track" style="height:14px;">
+                    <div class="forecast-bar-fill {% if bars.aqi_probability > 0.6 %}high{% elif bars.aqi_probability > 0.3 %}moderate{% else %}low{% endif %}"
+                         style="width:{{ bars.aqi_probability|floatformat:0 }}0%"></div>
+                </div>
+                <p class="text-muted mt-1 mb-0" style="font-size:11px;">
+                    Forecasted AQI: {{ bars.forecasted_aqi|floatformat:0 }}
+                </p>
+            </div>
+
+            <!-- Overall disruption -->
+            <div class="pt-3" style="border-top:1px solid #e2e8f0;">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-bold"><i class="fas fa-bolt text-primary me-2"></i>Overall Disruption Probability</span>
+                    <span class="fw-black text-primary">{{ bars.disruption_probability|floatformat:0 }}0%</span>
+                </div>
+                <div class="forecast-bar-track" style="height:18px;">
+                    <div class="forecast-bar-fill {% if bars.disruption_probability > 0.6 %}critical{% elif bars.disruption_probability > 0.4 %}high{% elif bars.disruption_probability > 0.2 %}moderate{% else %}low{% endif %}"
+                         style="width:{{ bars.disruption_probability|floatformat:0 }}0%"></div>
+                </div>
+                <p class="text-muted mt-2 mb-0 small">
+                    {% if bars.overall_risk_level == 'High' or bars.overall_risk_level == 'Critical' %}
+                    <span class="text-danger fw-semibold">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        High disruption risk — there is a good chance a trigger will fire this week.
+                    </span>
+                    {% elif bars.overall_risk_level == 'Moderate' %}
+                    <span class="text-warning fw-semibold">
+                        Moderate risk — stay alert. A trigger may fire this week.
+                    </span>
+                    {% else %}
+                    <span class="text-success fw-semibold">
+                        Low risk week ahead. Keep delivering!
+                    </span>
+                    {% endif %}
+                </p>
+            </div>
+
+            {% endwith %}
+        </div>
+    </div>
+
+</div>
+
+{% else %}
+<div class="nexura-alert info mb-4">
+    <span class="alert-icon"><i class="fas fa-info-circle"></i></span>
+    <div>
+        Forecasts are generated every <strong>Sunday at 8:30 PM IST</strong>.
+        {% if not worker_zone %}
+        Please <a href="{% url 'workers:account' %}">set your zone</a> to receive personalised forecasts.
+        {% else %}
+        Check back this Sunday for next week's forecast for <strong>{{ worker_zone.display_name }}</strong>.
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ── All Cities Overview ────────────────────────────────────────────── -->
+<div class="nexura-stat-card">
+    <h6 class="fw-bold mb-4">
+        <i class="fas fa-map text-primary me-2"></i>
+        All Cities — Week of {{ week_start|date:"d M Y" }}
+    </h6>
+
+    {% if all_city_forecasts %}
+    <div class="row g-3">
+        {% for fc in all_city_forecasts %}
+        <div class="col-md-6 col-lg-4">
+            <div class="d-flex align-items-center gap-3 p-3 rounded-3 border
+                        {% if worker_zone and fc.zone.city == worker_zone.city %}border-primary bg-light{% endif %}">
+                <div class="stat-icon
+                    {% if fc.risk_color == 'success' %}bg-success-soft
+                    {% elif fc.risk_color == 'warning' %}bg-warning-soft
+                    {% else %}bg-danger-soft{% endif %}
+                    flex-shrink-0">
+                    <i class="{{ fc.risk_icon }}
+                       text-{{ fc.risk_color }}"></i>
+                </div>
+                <div class="flex-fill">
+                    <p class="fw-bold mb-0 small">{{ fc.zone.city }}
+                        {% if worker_zone and fc.zone.city == worker_zone.city %}
+                        <span class="badge bg-primary rounded-pill ms-1" style="font-size:9px;">Your Zone</span>
+                        {% endif %}
+                    </p>
+                    <div class="d-flex gap-2 mt-1">
+                        <span class="forecast-risk-badge {{ fc.overall_risk_level|lower }}">
+                            {{ fc.overall_risk_level }}
+                        </span>
+                        <span class="text-muted" style="font-size:11px;">
+                            {{ fc.disruption_probability|floatformat:0 }}0% disruption risk
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted text-center py-3">Forecasts are generated every Sunday at 8:30 PM.</p>
+    {% endif %}
+</div>
+
+<!-- ── Historical Forecasts ───────────────────────────────────────────── -->
+{% if history %}
+<div class="nexura-stat-card mt-4">
+    <h6 class="fw-bold mb-4">
+        <i class="fas fa-history text-primary me-2"></i>
+        Past Forecasts — {{ worker_zone.display_name }}
+    </h6>
+    <div class="table-responsive">
+        <table class="nexura-table">
+            <thead>
+                <tr><th>Week</th><th>Rain</th><th>Heat</th><th>AQI</th><th>Disruption</th><th>Level</th></tr>
+            </thead>
+            <tbody>
+                {% for h in history %}
+                <tr>
+                    <td class="small fw-semibold">{{ h.forecast_date|date:"d M Y" }}</td>
+                    <td class="small">{{ h.rain_probability|floatformat:0 }}0%</td>
+                    <td class="small">{{ h.heat_probability|floatformat:0 }}0%</td>
+                    <td class="small">{{ h.aqi_probability|floatformat:0 }}0%</td>
+                    <td class="small">{{ h.disruption_probability|floatformat:0 }}0%</td>
+                    <td>
+                        <span class="forecast-risk-badge {{ h.overall_risk_level|lower }}">
+                            {{ h.overall_risk_level }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── Model info strip ───────────────────────────────────────────────── -->
+<div class="nexura-alert info mt-4">
+    <span class="alert-icon"><i class="fas fa-robot"></i></span>
+    <div class="small">
+        Forecasts are generated by <strong>Facebook Prophet</strong> models trained on historical weather,
+        AQI, and disruption data for each city. 7 cities × 4 metrics = 28 models updated every Sunday at 8:30 PM IST.
+        Alerts are sent via WhatsApp for Moderate risk and above.
+    </div>
+</div>
+
+{% endblock %}

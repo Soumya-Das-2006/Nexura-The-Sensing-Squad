@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }} — Nexura Blog{% endblock %}
+
+{% block content %}
+{% include 'includes/_breadcrumb.html' with title=post.title %}
+
+<div class="container py-5">
+    <div class="row g-5">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Hero Image -->
+            {% if post.cover_image %}
+            <img src="{{ post.cover_image.url }}" class="img-fluid rounded mb-4 w-100" alt="{{ post.title }}" style="height: 400px; object-fit: cover;">
+            {% else %}
+            <img src="{% static 'img/blog-1.png' %}" class="img-fluid rounded mb-4 w-100" alt="{{ post.title }}" style="height: 400px; object-fit: cover;">
+            {% endif %}
+
+            <!-- Meta Info -->
+            <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                <span class="badge bg-primary rounded-pill px-3 py-2">{{ post.get_category_display }}</span>
+                <span class="text-muted small"><i class="fa fa-calendar text-primary me-1"></i>{{ post.published_at|date:"d M Y" }}</span>
+                <span class="text-muted small"><i class="fa fa-user text-primary me-1"></i>{{ post.author_name }}</span>
+            </div>
+
+            <!-- Title -->
+            <h1 class="display-4 fw-bold mb-4">{{ post.title }}</h1>
+
+            <!-- Excerpt -->
+            {% if post.excerpt %}
+            <div class="alert alert-light border-0 mb-4 p-4">
+                <p class="mb-0 text-muted lead">{{ post.excerpt }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Full Content -->
+            <article class="text-muted" style="line-height: 1.9;">
+                {{ post.content|linebreaks }}
+            </article>
+        </div>
+
+        <!-- Sidebar: Related Posts -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 100px;">
+                <h5 class="fw-bold mb-4 pb-2 border-bottom">Related Posts</h5>
+                
+                {% for p in related %}
+                <div class="blog-item mb-4 p-3 border rounded hover-shadow">
+                    <a href="{% url 'core:blog_post' p.slug %}" class="h6 d-block mb-2 text-decoration-none">{{ p.title }}</a>
+                    <p class="text-muted small mb-2">{{ p.excerpt|truncatechars:90 }}</p>
+                    <small class="text-muted">{{ p.author_name }} • {{ p.published_at|date:"d M Y"|default:"Recent" }}</small>
+                </div>
+                {% empty %}
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-grip-lines fa-2x mb-3 opacity-50"></i>
+                    <p class="small mb-0">No related posts yet</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

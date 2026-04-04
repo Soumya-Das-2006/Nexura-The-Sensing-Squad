@@ -1,0 +1,68 @@
+{% extends "base_admin.html" %}
+{% load static %}
+{% block title %}Zones — Admin | Nexura{% endblock %}
+{% block page_title %}Zone Management{% endblock %}
+{% block page_subtitle %}{{ zones|length }} zones across 7 cities{% endblock %}
+{% block admin_nav_zones %}active{% endblock %}
+
+{% block content %}
+<div class="nexura-stat-card">
+    {% regroup zones by city as city_groups %}
+    {% for city_group in city_groups %}
+    <div class="mb-5 {% if not forloop.last %}pb-5{% endif %}"
+         {% if not forloop.last %}style="border-bottom:1px solid #e2e8f0;"{% endif %}>
+
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <h5 class="fw-bold mb-0">{{ city_group.grouper }}</h5>
+            <span class="badge bg-primary rounded-pill">{{ city_group.list|length }} zones</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="nexura-table">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Zone Name</th><th>State</th>
+                        <th>Lat / Lng</th><th>Radius</th><th>Risk Mult</th><th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for zone in city_group.list %}
+                    <tr>
+                        <td class="text-muted small">{{ zone.pk }}</td>
+                        <td class="fw-semibold small">{{ zone.area_name }}</td>
+                        <td class="text-muted small">{{ zone.state|default:"—" }}</td>
+                        <td class="text-muted small" style="font-family:monospace;font-size:11px;">
+                            {{ zone.lat|floatformat:4 }}, {{ zone.lng|floatformat:4 }}
+                        </td>
+                        <td class="small">{{ zone.radius_km }} km</td>
+                        <td>
+                            <span class="fw-bold
+                                {% if zone.risk_multiplier >= 1.6 %}text-danger
+                                {% elif zone.risk_multiplier >= 1.3 %}text-warning
+                                {% elif zone.risk_multiplier >= 1.1 %}text-info
+                                {% else %}text-success{% endif %}">
+                                {{ zone.risk_multiplier }}×
+                            </span>
+                            <span class="text-muted small ms-1">({{ zone.risk_level }})</span>
+                        </td>
+                        <td>
+                            {% if zone.active %}
+                            <span class="status-badge active" style="font-size:10px;">Active</span>
+                            {% else %}
+                            <span class="status-badge rejected" style="font-size:10px;">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-5">
+        <i class="fas fa-map fa-3x text-muted mb-3"></i>
+        <p class="text-muted">No zones found. Load fixtures with: <code>python manage.py loaddata fixtures/zones.json</code></p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base_admin.html" %}
+{% load static nexura_tags %}
+{% block title %}Workers — Admin | Nexura{% endblock %}
+{% block page_title %}Workers{% endblock %}
+{% block page_subtitle %}{{ workers|length }} workers{% endblock %}
+{% block admin_nav_workers %}active{% endblock %}
+
+{% block content %}
+
+<div class="nexura-stat-card mb-4">
+    <form method="GET" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label fw-semibold small">Search</label>
+            <input type="text" name="q" class="form-control"
+                   placeholder="Mobile or name…" value="{{ q }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold small">Platform</label>
+            <select name="platform" class="form-select">
+                <option value="">All Platforms</option>
+                {% for val, label in "zomato:Zomato,swiggy:Swiggy,amazon:Amazon,zepto:Zepto,blinkit:Blinkit,dunzo:Dunzo"|split_pairs %}
+                {% endfor %}
+                <option value="zomato"  {% if platform == 'zomato'  %}selected{% endif %}>Zomato</option>
+                <option value="swiggy"  {% if platform == 'swiggy'  %}selected{% endif %}>Swiggy</option>
+                <option value="amazon"  {% if platform == 'amazon'  %}selected{% endif %}>Amazon</option>
+                <option value="zepto"   {% if platform == 'zepto'   %}selected{% endif %}>Zepto</option>
+                <option value="blinkit" {% if platform == 'blinkit' %}selected{% endif %}>Blinkit</option>
+                <option value="dunzo"   {% if platform == 'dunzo'   %}selected{% endif %}>Dunzo</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary rounded-pill w-100">
+                <i class="fas fa-search me-1"></i>Search
+            </button>
+        </div>
+        {% if q or platform %}
+        <div class="col-md-2">
+            <a href="{% url 'admin_portal:workers' %}" class="btn btn-light rounded-pill w-100">Clear</a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<div class="nexura-stat-card">
+    {% if workers %}
+    <div class="table-responsive">
+        <table class="nexura-table">
+            <thead>
+                <tr>
+                    <th>Worker</th><th>Platform</th><th>Zone</th>
+                    <th>Policy</th><th>Risk</th><th>KYC</th><th>Joined</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for worker in workers %}
+                {% with p=worker.workerprofile %}
+                <tr>
+                    <td>
+                        <p class="fw-semibold mb-0 small">{{ p.name|default:"—" }}</p>
+                        <p class="text-muted mb-0" style="font-size:11px;">{{ worker.mobile }}</p>
+                    </td>
+                    <td class="small">{{ p.get_platform_display|default:"—" }}</td>
+                    <td class="small text-muted">{{ p.zone.display_name|default:"Not set" }}</td>
+                    <td>
+                        {% with pol=worker.policies.first %}
+                        {% if pol and pol.status == 'active' %}
+                        <span class="status-badge active" style="font-size:10px;">{{ pol.plan_tier.name }}</span>
+                        {% else %}
+                        <span class="text-muted small">None</span>
+                        {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="fraud-score-bar">
+                                <div class="fraud-score-fill {% if p.risk_score < 0.5 %}low{% elif p.risk_score < 0.75 %}medium{% else %}high{% endif %}"
+                                     style="width:{{ p.risk_score|floatformat:0 }}0%"></div>
+                            </div>
+                            <span class="small">{{ p.risk_score|floatformat:2 }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% with ks=p.kyc_status %}
+                        <span class="status-badge {% if ks == 'verified' %}active{% elif ks == 'submitted' %}pending{% else %}rejected{% endif %}" style="font-size:10px;">
+                            {{ ks|capfirst }}
+                        </span>
+                        {% endwith %}
+                    </td>
+                    <td class="text-muted small">{{ worker.date_joined|date:"d M Y" }}</td>
+                    <td>
+                        <button class="btn btn-light btn-sm rounded-pill px-2" onclick="recalcPrice({{ worker.pk }})" title="Recalculate premium">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+        <p class="text-muted">No workers found{% if q %} matching "{{ q }}"{% endif %}.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function recalcPrice(id) {
+    if (!confirm('Recalculate risk & premium for this worker?')) return;
+    fetch('/api/v1/pricing/recalculate/', {
+        method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+        body: JSON.stringify({worker_id: id})
+    }).then(r=>r.json()).then(d=>alert(d.message||'Queued.')).catch(()=>alert('Error.'));
+}
+</script>
+{% endblock %}

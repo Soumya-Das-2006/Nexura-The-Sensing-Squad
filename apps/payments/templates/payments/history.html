@@ -1,0 +1,137 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Payment History — Nexura{% endblock %}
+{% block page_title %}Premium Payments{% endblock %}
+{% block page_subtitle %}Your weekly Razorpay Autopay debit history.{% endblock %}
+
+{% block content %}
+
+<!-- ── Summary ───────────────────────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="nexura-stat-card text-center">
+            <div class="stat-icon bg-primary-soft mx-auto mb-3">
+                <i class="fas fa-rupee-sign"></i>
+            </div>
+            <p class="stat-value mb-1">₹{{ total_paid|floatformat:0 }}</p>
+            <p class="stat-label mb-0">Total Premiums Paid</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="nexura-stat-card text-center">
+            <div class="stat-icon bg-success-soft mx-auto mb-3">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <p class="stat-value mb-1">{{ payments|length }}</p>
+            <p class="stat-label mb-0">Weeks Covered</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="nexura-stat-card text-center">
+            <div class="stat-icon bg-warning-soft mx-auto mb-3">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <p class="stat-value mb-1">Autopay</p>
+            <p class="stat-label mb-0">via Razorpay</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── Payment table ─────────────────────────────────────────────────── -->
+<div class="nexura-stat-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h6 class="fw-bold mb-0">Weekly Debit History</h6>
+        <span class="badge bg-light text-dark border px-3 py-2 small">
+            <i class="fas fa-lock text-primary me-1"></i>
+            Auto-deducted every Monday
+        </span>
+    </div>
+
+    {% if payments %}
+    <div class="table-responsive">
+        <table class="nexura-table">
+            <thead>
+                <tr>
+                    <th>Week</th>
+                    <th>Plan</th>
+                    <th>Amount</th>
+                    <th>Razorpay ID</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td class="fw-semibold small">{{ payment.week_label }}</td>
+
+                    <td class="text-muted small">
+                        {{ payment.policy.plan_tier.name }}
+                    </td>
+
+                    <td class="fw-bold">₹{{ payment.amount|floatformat:0 }}</td>
+
+                    <td>
+                        {% if payment.razorpay_payment_id %}
+                        <span class="utr-ref">{{ payment.razorpay_payment_id|truncatechars:20 }}</span>
+                        {% else %}
+                        <span class="text-muted small">—</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <span class="status-badge
+                            {% if payment.status == 'captured' %}active
+                            {% elif payment.status == 'grace' %}pending
+                            {% elif payment.status == 'failed' %}rejected
+                            {% else %}paused{% endif %}">
+                            {% if payment.status == 'captured' %}✓ Paid
+                            {% elif payment.status == 'grace' %}🎁 Grace Token
+                            {% elif payment.status == 'failed' %}✗ Failed
+                            {% elif payment.status == 'pending' %}⏳ Pending
+                            {% else %}{{ payment.get_status_display }}{% endif %}
+                        </span>
+                        {% if payment.failure_reason %}
+                        <p class="text-danger mb-0 mt-1" style="font-size:11px;">
+                            {{ payment.failure_reason|truncatechars:50 }}
+                        </p>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-muted small">
+                        {{ payment.created_at|date:"d M Y" }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-calendar fa-3x text-muted mb-3"></i>
+        <h5 class="fw-bold text-muted">No payment history yet</h5>
+        <p class="text-muted">
+            Your first premium will be collected on the Monday after you activate a plan.
+        </p>
+        <a href="{% url 'policies:plans' %}" class="btn btn-primary rounded-pill px-4 mt-2">
+            View Plans
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ── Autopay info ───────────────────────────────────────────────────── -->
+<div class="nexura-alert info mt-4">
+    <span class="alert-icon"><i class="fas fa-info-circle"></i></span>
+    <div>
+        <strong>How Autopay works:</strong> Your weekly premium is auto-debited every Monday
+        via Razorpay. If a debit fails, you have
+        <strong>{{ request.user.workerprofile.grace_tokens }} grace token(s)</strong> remaining
+        this year. After all tokens are used, a failed debit pauses your policy.
+        <a href="{% url 'workers:account' %}" class="ms-1">Manage your account →</a>
+    </div>
+</div>
+
+{% endblock %}

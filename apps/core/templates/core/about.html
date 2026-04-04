@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About Nexura — Our Mission{% endblock %}
+{% block nav_about %}active{% endblock %}
+
+{% block content %}
+
+{% include "includes/_breadcrumb.html" with title="About Nexura" subtitle="Building the safety net India's gig workers deserve" %}
+
+<div class="container-fluid bg-light about pb-5">
+    <div class="container py-5">
+        <div class="row g-5">
+            <div class="col-xl-6 wow fadeInLeft">
+                <div class="about-item-content bg-white rounded p-5 h-100">
+                    <h4 class="text-primary">Our Mission</h4>
+                    <h2 class="display-5 fw-bold mb-4">Income Protection for 11 Million Gig Workers</h2>
+                    <p class="text-muted">India's delivery workers — powering Zomato, Swiggy, Amazon, Zepto and more — have zero safety net when disruption strikes. A heavy monsoon, a heatwave, a platform outage: any of these can wipe out a day's earnings instantly.</p>
+                    <p class="text-muted">Nexura fixes this with the first fully parametric, AI-powered income protection product designed specifically around how gig workers lose income.</p>
+                    <div class="mt-4">
+                        <p class="text-dark"><i class="fa fa-check text-primary me-3"></i>Zero paperwork — no claim forms ever</p>
+                        <p class="text-dark"><i class="fa fa-check text-primary me-3"></i>Automatic UPI payout in under 2 hours</p>
+                        <p class="text-dark"><i class="fa fa-check text-primary me-3"></i>6 disruption triggers monitored 24/7</p>
+                        <p class="text-dark"><i class="fa fa-check text-primary me-3"></i>Starting at ₹29 per week</p>
+                    </div>
+                    <div class="mt-4">
+                        <a class="btn btn-primary rounded-pill py-3 px-5" href="{% url 'core:how_it_works' %}">
+                            How It Works
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6 wow fadeInRight">
+                <div class="bg-white rounded p-5 h-100">
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <img src="{% static 'img/about-1.png' %}" class="img-fluid rounded w-100" alt="About Nexura">
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="counter-item bg-light rounded p-3 h-100 text-center">
+                                <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">11</span>
+                                <span class="h2 fw-bold text-primary">M+</span>
+                                <h6 class="text-dark mt-1">Gig Workers in India</h6>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="counter-item bg-light rounded p-3 h-100 text-center">
+                                <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">7</span>
+                                <span class="h1 fw-bold text-primary">+</span>
+                                <h6 class="text-dark mt-1">Cities Covered</h6>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="counter-item bg-light rounded p-3 h-100 text-center">
+                                <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">6</span>
+                                <span class="h1 fw-bold text-primary"></span>
+                                <h6 class="text-dark mt-1">Trigger Types</h6>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="counter-item bg-light rounded p-3 h-100 text-center">
+                                <span class="text-primary fs-2 fw-bold" data-toggle="counter-up">2</span>
+                                <span class="h1 fw-bold text-primary">hr</span>
+                                <h6 class="text-dark mt-1">Max Payout Time</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Guidewire context -->
+<div class="container-fluid py-5">
+    <div class="container py-4">
+        <div class="row g-5 align-items-center justify-content-center">
+            <div class="col-lg-8 text-center wow fadeInUp">
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-4 py-2 mb-3 fs-6">
+                    Guidewire DEVTrails 2026
+                </span>
+                <h2 class="display-5 fw-bold mb-4">Built at Parul University, Vadodara</h2>
+                <p class="text-muted fs-5 mb-4">
+                    Nexura was conceived and built for the Guidewire DEVTrails 2026 hackathon — 
+                    a challenge to reimagine insurance technology for underserved populations. 
+                    We chose India's gig delivery workers because the gap between their contribution 
+                    to the economy and their access to financial protection is massive.
+                </p>
+                <p class="text-muted">
+                    The platform uses trained XGBoost and Prophet ML models, a 6-layer fraud detection pipeline,
+                    real-time weather and AQI APIs, and Razorpay's payment infrastructure to deliver 
+                    a fully automated, parametric income protection product.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

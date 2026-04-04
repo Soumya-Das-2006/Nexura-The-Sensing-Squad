@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Complete Your Profile — Nexura{% endblock %}
+{% block topbar %}{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block whatsapp_float %}{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center p-4"
+     style="background: #f8fafc;">
+    <div style="width: 100%; max-width: 560px;">
+
+        <a href="{% url 'core:home' %}" class="text-decoration-none d-block mb-4 text-center">
+            <h3 class="text-primary fw-black"><i class="fas fa-shield-alt me-2"></i>Nexura</h3>
+        </a>
+
+        <!-- Progress -->
+        <div class="reg-steps mb-4">
+            <div class="reg-step done">
+                <div class="reg-step-dot"><i class="fas fa-check fa-xs"></i></div>
+                <div class="reg-step-label">Mobile</div>
+            </div>
+            <div class="reg-step-connector done"></div>
+            <div class="reg-step done">
+                <div class="reg-step-dot"><i class="fas fa-check fa-xs"></i></div>
+                <div class="reg-step-label">Verify</div>
+            </div>
+            <div class="reg-step-connector done"></div>
+            <div class="reg-step active">
+                <div class="reg-step-dot">3</div>
+                <div class="reg-step-label">Profile</div>
+            </div>
+        </div>
+
+        <div class="auth-surface-card rounded-4 shadow-sm p-5">
+            <h4 class="fw-bold mb-1">Complete Your Profile</h4>
+            <p class="text-muted mb-4 small">This helps us show you the right risk forecast and ensure instant payouts.</p>
+
+            {% include "includes/_messages.html" %}
+
+            <form method="POST" action="{% url 'accounts:register_profile' %}">
+                {% csrf_token %}
+                <input type="hidden" name="plan" value="{{ plan }}">
+
+                <div class="row g-3">
+
+                    <!-- Full Name -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Full Name *</label>
+                        <input type="text" name="name" class="form-control"
+                               placeholder="As on your Aadhaar / delivery app"
+                               value="{{ request.POST.name|default:'' }}" required autofocus>
+                    </div>
+
+                    <!-- Platform -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Delivery Platform *</label>
+                        <select name="platform" class="form-select" required>
+                            <option value="">Select platform…</option>
+                            {% for val, label in platform_choices %}
+                            <option value="{{ val }}"
+                                {% if request.POST.platform == val %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Segment -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Vehicle Type *</label>
+                        <select name="segment" class="form-select" required>
+                            {% for val, label in segment_choices %}
+                            <option value="{{ val }}"
+                                {% if request.POST.segment == val %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Zone -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Your Operating Zone *</label>
+                        <select name="zone" class="form-select" required>
+                            <option value="">Select your city / area…</option>
+                            {% regroup zones by city as city_list %}
+                            {% for city_group in city_list %}
+                            <optgroup label="{{ city_group.grouper }}">
+                                {% for zone in city_group.list %}
+                                <option value="{{ zone.pk }}"
+                                    {% if request.POST.zone == zone.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ zone.area_name }}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Choose the area where you do most of your deliveries.</div>
+                    </div>
+
+                    <!-- UPI ID -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">UPI ID *</label>
+                        <input type="text" name="upi_id" class="form-control"
+                               placeholder="yourname@upi  or  9XXXXXXXXX@paytm"
+                               value="{{ request.POST.upi_id|default:'' }}" required>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle text-primary me-1"></i>
+                            All payouts will be sent to this UPI ID within 2 hours of a trigger.
+                        </div>
+                    </div>
+
+                    <!-- Language -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Preferred Language</label>
+                        <select name="language" class="form-select">
+                            <option value="en" {% if request.POST.language == 'en' or not request.POST.language %}selected{% endif %}>English</option>
+                            <option value="hi" {% if request.POST.language == 'hi' %}selected{% endif %}>हिंदी (Hindi)</option>
+                            <option value="mr" {% if request.POST.language == 'mr' %}selected{% endif %}>मराठी (Marathi)</option>
+                            <option value="bn" {% if request.POST.language == 'bn' %}selected{% endif %}>বাংলা (Bengali)</option>
+                            <option value="ta" {% if request.POST.language == 'ta' %}selected{% endif %}>தமிழ் (Tamil)</option>
+                            <option value="te" {% if request.POST.language == 'te' %}selected{% endif %}>తెలుగు (Telugu)</option>
+                        </select>
+                        <div class="form-text">WhatsApp notifications will be sent in this language.</div>
+                    </div>
+
+                    <div class="col-12 mt-2">
+                        <button type="submit" class="btn btn-primary rounded-pill py-3 w-100 fw-semibold fs-5">
+                            <i class="fas fa-arrow-right me-2"></i>Continue to Plans
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

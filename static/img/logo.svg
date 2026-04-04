@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#015fc9"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="8" width="44" height="44" rx="12" fill="url(#g)"/>
+  <path d="M16 42 L16 20 L24 20 L30 35 L36 20 L44 20 L44 42 L38 42 L38 30 L33 42 L27 42 L22 30 L22 42 Z" fill="white"/>
+  <text x="58" y="38" font-family="Inter,DM Sans,sans-serif" font-weight="900" font-size="26" fill="#0f172a">nexura</text>
+  <text x="58" y="52" font-family="Inter,sans-serif" font-weight="500" font-size="10" fill="#64748b">income protection</text>
+</svg>

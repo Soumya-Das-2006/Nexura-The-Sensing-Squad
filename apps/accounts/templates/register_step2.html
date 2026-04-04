@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Verify OTP — Nexura{% endblock %}
+{% block topbar %}{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block whatsapp_float %}{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center p-4"
+     style="background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);">
+    <div style="width: 100%; max-width: 440px;">
+
+        <a href="{% url 'core:home' %}" class="text-decoration-none d-block mb-4 text-center">
+            <h3 class="text-primary fw-black"><i class="fas fa-shield-alt me-2"></i>Nexura</h3>
+        </a>
+
+        <!-- Progress -->
+        <div class="reg-steps mb-4">
+            <div class="reg-step done">
+                <div class="reg-step-dot"><i class="fas fa-check fa-xs"></i></div>
+                <div class="reg-step-label">Mobile</div>
+            </div>
+            <div class="reg-step-connector done"></div>
+            <div class="reg-step active">
+                <div class="reg-step-dot">2</div>
+                <div class="reg-step-label">Verify</div>
+            </div>
+            <div class="reg-step-connector"></div>
+            <div class="reg-step">
+                <div class="reg-step-dot">3</div>
+                <div class="reg-step-label">Profile</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-4 shadow-sm p-5 text-center">
+            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                 style="width:64px;height:64px;">
+                <i class="fas fa-mobile-alt text-primary fa-2x"></i>
+            </div>
+            <h4 class="fw-bold mb-1">Enter Verification Code</h4>
+            <p class="text-muted mb-1 small">
+                We sent a 6-digit OTP to <strong>+91 {{ mobile }}</strong>
+            </p>
+            <a href="{% url 'accounts:register' %}" class="text-primary small d-block mb-4">
+                Wrong number? Change it
+            </a>
+
+            {% include "includes/_messages.html" %}
+
+            <form method="POST" action="{% url 'accounts:register_otp' %}" id="otpForm">
+                {% csrf_token %}
+                <!-- Individual digit inputs -->
+                <div class="otp-inputs mb-4" id="otpInputs">
+                    {% for i in "123456" %}
+                    <input type="text" name="d{{ i }}" maxlength="1"
+                           inputmode="numeric" pattern="[0-9]"
+                           class="otp-digit" autocomplete="one-time-code">
+                    {% endfor %}
+                </div>
+                <!-- Hidden combined field -->
+                <input type="hidden" name="otp" id="otpHidden">
+
+                <button type="submit" class="btn btn-primary rounded-pill py-3 w-100 fw-semibold mb-3" id="verifyBtn">
+                    <i class="fas fa-check me-2"></i>Verify OTP
+                </button>
+            </form>
+
+            <div class="d-flex align-items-center justify-content-center gap-2">
+                <span class="text-muted small">Didn't receive it?</span>
+                <form method="POST" action="{% url 'accounts:resend_otp' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-link p-0 text-primary small fw-semibold"
+                            id="resendBtn">
+                        Resend OTP
+                    </button>
+                </form>
+                <span class="text-muted small" id="countdown"></span>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── OTP digit box navigation ────────────────────────────────────────────────
+const digits   = document.querySelectorAll('.otp-digit');
+const hidden   = document.getElementById('otpHidden');
+const form     = document.getElementById('otpForm');
+
+digits.forEach((input, idx) => {
+    input.addEventListener('input', (e) => {
+        const val = e.target.value.replace(/\D/g, '');
+        e.target.value = val ? val[val.length - 1] : '';
+        if (val && idx < digits.length - 1) digits[idx + 1].focus();
+        updateHidden();
+    });
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+            digits[idx - 1].focus();
+        }
+    });
+    input.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+        [...text.slice(0, 6)].forEach((ch, i) => { if (digits[i]) digits[i].value = ch; });
+        updateHidden();
+        if (text.length >= 6) form.submit();
+    });
+});
+
+function updateHidden() {
+    hidden.value = [...digits].map(d => d.value).join('');
+}
+
+// Auto-focus first digit
+if (digits[0]) digits[0].focus();
+
+// ── Resend countdown (30s) ──────────────────────────────────────────────────
+let seconds     = 30;
+const resendBtn  = document.getElementById('resendBtn');
+const countdown  = document.getElementById('countdown');
+
+resendBtn.disabled = true;
+const timer = setInterval(() => {
+    seconds--;
+    countdown.textContent = `(${seconds}s)`;
+    if (seconds <= 0) {
+        clearInterval(timer);
+        resendBtn.disabled = false;
+        countdown.textContent = '';
+    }
+}, 1000);
+</script>
+{% endblock %}

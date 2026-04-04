@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body_class %}nexura-dashboard bg-light{% endblock %}
+{% block topbar %}{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block whatsapp_float %}{% endblock %}
+
+{% block full_page %}
+<!-- ═══════════════════════════════════════════════════════════════
+     NEXURA ADMIN PORTAL
+═══════════════════════════════════════════════════════════════ -->
+
+<!-- ── Admin Sidebar ─────────────────────────────────────────────────── -->
+<nav class="nexura-sidebar" id="nexuraSidebar" style="background: #0f172a;">
+
+    <div class="sidebar-brand" style="background: rgba(1,95,201,0.2);">
+        <h4 class="d-flex align-items-center gap-2">
+            <i class="fas fa-shield-alt text-primary"></i>
+            <span>Nexura Admin</span>
+        </h4>
+        <p class="text-muted mb-0" style="font-size: 11px;">Operations Portal</p>
+    </div>
+
+    <ul class="nav flex-column mt-2 px-0">
+
+        <li><a href="{% url 'admin_portal:dashboard' %}" class="nav-link {% block admin_nav_home %}{% endblock %}">
+            <i class="fas fa-chart-line"></i><span>Overview</span></a></li>
+
+        <li><a href="{% url 'admin_portal:workers' %}" class="nav-link {% block admin_nav_workers %}{% endblock %}">
+            <i class="fas fa-users"></i><span>Workers</span></a></li>
+
+        <li><a href="{% url 'admin_portal:claims' %}" class="nav-link {% block admin_nav_claims %}{% endblock %}">
+            <i class="fas fa-file-invoice-dollar"></i><span>Claims</span></a></li>
+
+        <li><a href="{% url 'admin_portal:payouts' %}" class="nav-link {% block admin_nav_payouts %}{% endblock %}">
+            <i class="fas fa-rupee-sign"></i><span>Payouts</span></a></li>
+
+        <li><a href="{% url 'admin_portal:triggers' %}" class="nav-link {% block admin_nav_triggers %}{% endblock %}">
+            <i class="fas fa-bolt"></i><span>Disruption Events</span></a></li>
+
+        <li><a href="{% url 'admin_portal:fraud' %}" class="nav-link {% block admin_nav_fraud %}{% endblock %}">
+            <i class="fas fa-user-secret"></i><span>Fraud Flags</span></a></li>
+
+        <li><a href="{% url 'admin_portal:zones' %}" class="nav-link {% block admin_nav_zones %}{% endblock %}">
+            <i class="fas fa-map"></i><span>Zones</span></a></li>
+
+        <li><a href="{% url 'admin_portal:forecast' %}" class="nav-link {% block admin_nav_forecast %}{% endblock %}">
+            <i class="fas fa-cloud-sun-rain"></i><span>Forecasts</span></a></li>
+
+        <li style="border-top: 1px solid rgba(255,255,255,0.08); margin-top: 8px;">
+            <a href="{% url 'accounts:logout' %}" class="nav-link text-danger">
+                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+            </a>
+        </li>
+
+    </ul>
+</nav>
+
+<!-- ── Admin Content ─────────────────────────────────────────────────── -->
+<div class="nexura-main-content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3"
+         style="border-bottom: 1px solid #e2e8f0;">
+        <div>
+            <h5 class="mb-0 fw-bold">{% block page_title %}Admin Dashboard{% endblock %}</h5>
+            <p class="mb-0 text-muted" style="font-size: 13px;">{% block page_subtitle %}{% endblock %}</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-danger px-3 py-2">Admin Portal</span>
+            <span class="text-muted small">{{ request.user.email }}</span>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="mb-4">{% include "includes/_messages.html" %}</div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+</div>
+
+{% endblock full_page %}

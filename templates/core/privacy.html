@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Privacy Policy — Nexura{% endblock %}
+
+{% block content %}
+
+{% include "includes/_breadcrumb.html" with title="Privacy Policy" subtitle="How we collect, use and protect your data" %}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="nexura-stat-card p-5">
+                <p class="text-muted small mb-5"><strong>Last updated:</strong> March 2026 &nbsp;·&nbsp; Nexura, built by Team Nexura, Parul University</p>
+
+                <h4 class="fw-bold mb-3">1. Information We Collect</h4>
+                <p class="text-muted mb-4">When you register with Nexura, we collect:</p>
+                <ul class="text-muted mb-4">
+                    <li><strong>Identity:</strong> Name, mobile number, email address</li>
+                    <li><strong>KYC:</strong> Aadhaar number — stored as a SHA-256 hash only. We never store the raw Aadhaar number.</li>
+                    <li><strong>Payment:</strong> UPI ID and Razorpay mandate details (no card numbers stored)</li>
+                    <li><strong>Location:</strong> Your selected delivery zone / city</li>
+                    <li><strong>Platform:</strong> Your primary delivery platform (Zomato, Swiggy, etc.)</li>
+                </ul>
+
+                <h4 class="fw-bold mb-3">2. How We Use Your Data</h4>
+                <ul class="text-muted mb-4">
+                    <li>To process your policy, claims, and payouts</li>
+                    <li>To run the 6-layer fraud detection pipeline</li>
+                    <li>To personalise your weekly premium using XGBoost risk scoring</li>
+                    <li>To send you claim and payout notifications on WhatsApp</li>
+                    <li>To generate your IncomeDNA PDF report</li>
+                </ul>
+
+                <h4 class="fw-bold mb-3">3. Data Storage and Security</h4>
+                <ul class="text-muted mb-4">
+                    <li>All data is stored on AWS (ap-south-1, Mumbai region)</li>
+                    <li>Aadhaar numbers are irreversibly hashed using SHA-256 before storage</li>
+                    <li>Documents are encrypted and RSA-signed before S3 upload</li>
+                    <li>All API endpoints use HTTPS with HSTS in production</li>
+                    <li>JWT tokens expire in 15 minutes; refresh tokens in 7 days</li>
+                </ul>
+
+                <h4 class="fw-bold mb-3">4. Data Sharing</h4>
+                <p class="text-muted mb-4">We do not sell your personal data. We share data only with:</p>
+                <ul class="text-muted mb-4">
+                    <li><strong>Razorpay</strong> — for payment processing and UPI payouts</li>
+                    <li><strong>Twilio</strong> — for OTP SMS delivery</li>
+                    <li><strong>Meta WhatsApp Business API</strong> — for notifications</li>
+                    <li><strong>AWS</strong> — for document storage</li>
+                    <li><strong>UIDAI</strong> — for Aadhaar OTP verification (production only)</li>
+                </ul>
+
+                <h4 class="fw-bold mb-3">5. Your Rights</h4>
+                <ul class="text-muted mb-4">
+                    <li>You may download your IncomeDNA report at any time from your dashboard</li>
+                    <li>You may cancel your policy and UPI Autopay mandate from your dashboard</li>
+                    <li>You may request deletion of your account by emailing <a href="mailto:privacy@nexaura.in">privacy@nexaura.in</a></li>
+                </ul>
+
+                <h4 class="fw-bold mb-3">6. Contact</h4>
+                <p class="text-muted mb-0">For privacy-related queries, contact us at <a href="mailto:privacy@nexaura.in">privacy@nexaura.in</a> or via the <a href="{% url 'core:contact' %}">contact form</a>.</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

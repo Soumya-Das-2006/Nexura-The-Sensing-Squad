@@ -1,0 +1,124 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+{% block title %}IncomeDNA Report — Nexura{% endblock %}
+{% block page_title %}IncomeDNA Report{% endblock %}
+{% block page_subtitle %}A cryptographically signed PDF proving your gig earnings — accepted by banks and MSME lenders.{% endblock %}
+{% block sidebar_documents %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-7">
+
+        <!-- Generate new report -->
+        <div class="nexura-stat-card mb-4">
+            <h6 class="fw-bold mb-3 text-uppercase small text-muted">
+                <i class="fas fa-file-pdf text-danger me-2"></i>Generate New Report
+            </h6>
+            <p class="text-muted small mb-4">
+                Choose the period you want to certify. The report includes all
+                Nexura payouts received, your delivery platform, zone, and KYC status.
+            </p>
+            <form method="POST" action="{% url 'documents:generate_income_dna' %}">
+                {% csrf_token %}
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Report Period</label>
+                        <select name="period_months" class="form-select">
+                            <option value="1">Last 1 month</option>
+                            <option value="3" selected>Last 3 months</option>
+                            <option value="6">Last 6 months</option>
+                            <option value="12">Last 12 months</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="submit" class="btn btn-danger rounded-pill w-100 py-2 fw-semibold">
+                            <i class="fas fa-file-pdf me-2"></i>Generate IncomeDNA PDF
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Previous reports -->
+        {% if docs %}
+        <div class="nexura-stat-card">
+            <h6 class="fw-bold mb-3 text-uppercase small text-muted">Previous Reports</h6>
+            {% for doc in docs %}
+            <div class="d-flex align-items-center justify-content-between py-3
+                        {% if not forloop.last %}border-bottom{% endif %}">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon {% if doc.status == 'ready' %}bg-success-soft{% elif doc.status == 'failed' %}bg-danger-soft{% else %}bg-warning-soft{% endif %}"
+                         style="width:40px;height:40px;">
+                        <i class="fas fa-file-pdf
+                           {% if doc.status == 'ready' %}text-danger{% elif doc.status == 'failed' %}text-danger{% else %}text-warning{% endif %}"
+                           style="font-size:16px;"></i>
+                    </div>
+                    <div>
+                        <p class="fw-semibold mb-0 small">IncomeDNA — Last {{ doc.period_months }} month{{ doc.period_months|pluralize }}</p>
+                        <p class="text-muted mb-0" style="font-size:11px;">
+                            Generated {{ doc.created_at|date:"d M Y H:i" }}
+                        </p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="status-badge {% if doc.status == 'ready' %}active{% elif doc.status == 'failed' %}rejected{% else %}pending{% endif %}">
+                        {{ doc.get_status_display }}
+                    </span>
+                    {% if doc.status == 'ready' %}
+                    <a href="{% url 'documents:download_income_dna' doc.pk %}"
+                       class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                        <i class="fas fa-download me-1"></i>Download
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div class="col-lg-5">
+        <div class="nexura-stat-card">
+            <h6 class="fw-bold mb-3 text-uppercase small text-muted">What's in the Report</h6>
+            <div class="d-flex flex-column gap-3">
+                <div class="d-flex gap-3 align-items-start">
+                    <i class="fas fa-id-card text-primary mt-1"></i>
+                    <div>
+                        <p class="fw-semibold mb-0 small">Verified Identity</p>
+                        <p class="text-muted mb-0" style="font-size:12px;">Name, mobile, platform, zone, and KYC status.</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 align-items-start">
+                    <i class="fas fa-rupee-sign text-success mt-1"></i>
+                    <div>
+                        <p class="fw-semibold mb-0 small">Earnings History</p>
+                        <p class="text-muted mb-0" style="font-size:12px;">All Nexura payouts with dates, trigger types, amounts, and UTR references.</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 align-items-start">
+                    <i class="fas fa-signature text-primary mt-1"></i>
+                    <div>
+                        <p class="fw-semibold mb-0 small">Cryptographic Signature</p>
+                        <p class="text-muted mb-0" style="font-size:12px;">RSA-SHA256 signed. Tamper-proof and verifiable at nexaura.in/verify.</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 align-items-start">
+                    <i class="fas fa-university text-warning mt-1"></i>
+                    <div>
+                        <p class="fw-semibold mb-0 small">Bank Loan Applications</p>
+                        <p class="text-muted mb-0" style="font-size:12px;">Accepted by partner lenders as income proof for MSME credit.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="nexura-alert warning mt-4">
+                <span class="alert-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                <div style="font-size:12px;">
+                    <strong>Hackathon Prototype:</strong> This document is for demonstration.
+                    Not a legally certified financial instrument.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

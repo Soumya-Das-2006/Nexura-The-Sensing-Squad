@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+
+# Env files
+.env
+.env.local
+
+# Virtual env
+.venv/
+env/
+
+# VS Code
+.vscode/
+
+# Media files (optional)
+media/
+
+# Logs
+*.log

@@ -1,0 +1,32 @@
+{% for message in messages %}
+    {% if message.tags == 'error' or message.level == 40 %}
+        {% with alert_class="danger" icon="fas fa-exclamation-circle" %}
+        <div class="nexura-alert {{ alert_class }} mb-2" role="alert">
+            <span class="alert-icon"><i class="{{ icon }}"></i></span>
+            <div>{{ message }}</div>
+            <button type="button" class="btn-close ms-auto" onclick="this.parentElement.remove()"></button>
+        </div>
+        {% endwith %}
+
+    {% elif message.tags == 'warning' or message.level == 30 %}
+        <div class="nexura-alert warning mb-2" role="alert">
+            <span class="alert-icon"><i class="fas fa-exclamation-triangle"></i></span>
+            <div>{{ message }}</div>
+            <button type="button" class="btn-close ms-auto" onclick="this.parentElement.remove()"></button>
+        </div>
+
+    {% elif message.tags == 'success' or message.level == 25 %}
+        <div class="nexura-alert success mb-2" role="alert">
+            <span class="alert-icon"><i class="fas fa-check-circle"></i></span>
+            <div>{{ message }}</div>
+            <button type="button" class="btn-close ms-auto" onclick="this.parentElement.remove()"></button>
+        </div>
+
+    {% else %}
+        <div class="nexura-alert info mb-2" role="alert">
+            <span class="alert-icon"><i class="fas fa-info-circle"></i></span>
+            <div>{{ message }}</div>
+            <button type="button" class="btn-close ms-auto" onclick="this.parentElement.remove()"></button>
+        </div>
+    {% endif %}
+{% endfor %}

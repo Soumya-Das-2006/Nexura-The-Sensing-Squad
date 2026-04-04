@@ -1,0 +1,110 @@
+{% extends "base_admin.html" %}
+{% load static %}
+{% block title %}Claims — Admin Portal | Nexura{% endblock %}
+{% block page_title %}Claims Management{% endblock %}
+{% block admin_nav_claims %}active{% endblock %}
+
+{% block content %}
+
+<!-- Filter tabs -->
+<div class="nexura-stat-card mb-4">
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'admin_portal:claims' %}" class="btn rounded-pill py-1 px-3 small {% if not status_filter %}btn-primary{% else %}btn-light{% endif %}">All</a>
+        <a href="?status=pending"  class="btn rounded-pill py-1 px-3 small {% if status_filter == 'pending' %}btn-warning{% else %}btn-light{% endif %}">⏳ Pending</a>
+        <a href="?status=on_hold" class="btn rounded-pill py-1 px-3 small {% if status_filter == 'on_hold' %}btn-secondary{% else %}btn-light{% endif %}">🔍 On Hold</a>
+        <a href="?status=approved" class="btn rounded-pill py-1 px-3 small {% if status_filter == 'approved' %}btn-success{% else %}btn-light{% endif %}">✓ Approved</a>
+        <a href="?status=rejected" class="btn rounded-pill py-1 px-3 small {% if status_filter == 'rejected' %}btn-danger{% else %}btn-light{% endif %}">✗ Rejected</a>
+    </div>
+</div>
+
+<div class="nexura-stat-card">
+    <div class="table-responsive">
+        <table class="nexura-table">
+            <thead>
+                <tr>
+                    <th>#</th><th>Worker</th><th>Trigger</th><th>Zone</th>
+                    <th>Amount</th><th>Fraud Score</th><th>Status</th><th>Date</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in claims %}
+                <tr>
+                    <td class="text-muted small">{{ claim.pk }}</td>
+                    <td class="small fw-semibold">{{ claim.worker.mobile }}</td>
+                    <td>
+                        <span class="trigger-badge {{ claim.disruption_event.trigger_type|default:''|cut:' ' }}">
+                            {{ claim.disruption_event.get_trigger_type_display|default:"—" }}
+                        </span>
+                    </td>
+                    <td class="text-muted small">{{ claim.disruption_event.zone|default:"—" }}</td>
+                    <td class="fw-bold">₹{{ claim.payout_amount|floatformat:0 }}</td>
+                    <td>
+                        <span class="fw-semibold {% if claim.fraud_score >= 0.7 %}text-danger{% elif claim.fraud_score >= 0.5 %}text-warning{% else %}text-success{% endif %}">
+                            {{ claim.fraud_score|floatformat:3 }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge {% if claim.status == 'approved' %}credited{% elif claim.status == 'on_hold' %}on-hold{% elif claim.status == 'rejected' %}rejected{% else %}pending{% endif %}">
+                            {{ claim.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="text-muted small">{{ claim.created_at|date:"d M H:i" }}</td>
+                    <td>
+                        {% if claim.status in 'pending,on_hold' %}
+                        <div class="d-flex gap-1">
+                            <form method="POST" action="{% url 'admin_portal:approve_claim' claim.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-sm rounded-pill px-2 py-1" style="font-size:11px;">
+                                    ✓ Approve
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn-danger btn-sm rounded-pill px-2 py-1"
+                                    style="font-size:11px;"
+                                    onclick="rejectClaim({{ claim.pk }})">
+                                ✗ Reject
+                            </button>
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted py-4">No claims found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Reject modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header"><h5 class="modal-title fw-bold">Reject Claim</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="rejectForm" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <label class="form-label fw-semibold small">Rejection Reason *</label>
+                    <textarea name="reason" class="form-control" rows="3" required
+                              placeholder="Explain why this claim is being rejected…"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">Confirm Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function rejectClaim(claimId) {
+    document.getElementById('rejectForm').action = `/admin-portal/claims/${claimId}/reject/`;
+    new bootstrap.Modal(document.getElementById('rejectModal')).show();
+}
+</script>
+{% endblock %}

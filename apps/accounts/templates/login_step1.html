@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login — Nexura{% endblock %}
+{% block topbar %}{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block whatsapp_float %}{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center p-4"
+     style="background: linear-gradient(135deg, #015fc9 0%, #0369a1 100%);">
+    <div style="width: 100%; max-width: 420px;">
+
+        <a href="{% url 'core:home' %}" class="text-decoration-none d-block mb-4 text-center">
+            <h2 class="text-white fw-black d-flex align-items-center justify-content-center gap-2">
+                <i class="fas fa-shield-alt"></i> Nexura
+            </h2>
+        </a>
+
+        <div class="bg-white rounded-4 shadow p-5">
+            <div class="text-center mb-4">
+                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                     style="width:64px;height:64px;">
+                    <i class="fas fa-sign-in-alt text-primary fa-2x"></i>
+                </div>
+                <h4 class="fw-bold mb-1">Welcome Back</h4>
+                <p class="text-muted small">Enter your registered mobile to continue.</p>
+            </div>
+
+            {% include "includes/_messages.html" %}
+
+            <form method="POST" action="{% url 'accounts:login' %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="form-label fw-semibold small">Registered Mobile Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted fw-semibold">+91</span>
+                        <input type="tel" name="mobile" class="form-control border-start-0 ps-0"
+                               placeholder="9XXXXXXXXX" maxlength="10"
+                               inputmode="numeric" pattern="[0-9]{10}"
+                               autofocus required
+                               value="{{ request.POST.mobile|default:'' }}">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary rounded-pill py-3 w-100 fw-semibold">
+                    <i class="fas fa-paper-plane me-2"></i>Send OTP
+                </button>
+            </form>
+
+            <hr class="my-4">
+            <div class="text-center">
+                <p class="text-muted small mb-0">
+                    New to Nexura?
+                    <a href="{% url 'accounts:register' %}" class="text-primary fw-semibold">Register here</a>
+                </p>
+            </div>
+        </div>
+
+        <p class="text-center text-white-50 mt-4 small">
+            Need help? <a href="{% url 'core:contact' %}" class="text-white">Contact Support</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

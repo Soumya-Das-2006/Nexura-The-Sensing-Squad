@@ -1,0 +1,193 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Payout History — Nexura{% endblock %}
+{% block page_title %}Payout History{% endblock %}
+{% block page_subtitle %}All UPI transfers credited to your account.{% endblock %}
+{% block sidebar_payouts %}active{% endblock %}
+
+{% block content %}
+
+<!-- ── Summary cards ─────────────────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="nexura-stat-card text-center">
+            <div class="stat-icon bg-success-soft mx-auto mb-3">
+                <i class="fas fa-rupee-sign"></i>
+            </div>
+            <p class="stat-value mb-1 text-success">₹{{ total_credited|floatformat:0 }}</p>
+            <p class="stat-label mb-0">Total Received</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="nexura-stat-card text-center">
+            <div class="stat-icon bg-primary-soft mx-auto mb-3">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <p class="stat-value mb-1">{{ payouts|length }}</p>
+            <p class="stat-label mb-0">Total Payouts</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="nexura-stat-card text-center">
+            <div class="stat-icon bg-warning-soft mx-auto mb-3">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <p class="stat-value mb-1">&lt;2 hrs</p>
+            <p class="stat-label mb-0">Average Speed</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── Filter tabs ───────────────────────────────────────────────────── -->
+<div class="nexura-stat-card mb-4">
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'payouts:history' %}"
+           class="btn rounded-pill py-1 px-3 small {% if not status_filter %}btn-primary{% else %}btn-light{% endif %}">
+            All
+        </a>
+        <a href="?status=credited"
+           class="btn rounded-pill py-1 px-3 small {% if status_filter == 'credited' %}btn-success{% else %}btn-light{% endif %}">
+            ✓ Credited
+        </a>
+        <a href="?status=pending"
+           class="btn rounded-pill py-1 px-3 small {% if status_filter == 'pending' %}btn-warning{% else %}btn-light{% endif %}">
+            ⏳ Pending
+        </a>
+        <a href="?status=failed"
+           class="btn rounded-pill py-1 px-3 small {% if status_filter == 'failed' %}btn-danger{% else %}btn-light{% endif %}">
+            ✗ Failed
+        </a>
+    </div>
+</div>
+
+<!-- ── Payout list ────────────────────────────────────────────────────── -->
+<div class="nexura-stat-card">
+    {% if payouts %}
+    <div class="table-responsive">
+        <table class="nexura-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Trigger</th>
+                    <th>Amount</th>
+                    <th>UPI / UTR</th>
+                    <th>Status</th>
+                    <th>Speed</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payout in payouts %}
+                <tr>
+                    <td class="text-muted small">{{ payout.pk }}</td>
+
+                    <td>
+                        {% if payout.claim and payout.claim.disruption_event %}
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="{{ payout.claim.disruption_event.icon }}
+                               text-{{ payout.claim.disruption_event.color }}"
+                               style="width:16px;"></i>
+                            <span class="small">
+                                {{ payout.claim.disruption_event.get_trigger_type_display }}
+                            </span>
+                        </div>
+                        <p class="text-muted mb-0" style="font-size:11px;">
+                            {{ payout.claim.disruption_event.zone.display_name }}
+                        </p>
+                        {% else %}
+                        <span class="text-muted small">—</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <span class="fw-bold fs-5
+                            {% if payout.status == 'credited' %}text-success{% endif %}">
+                            ₹{{ payout.amount|floatformat:0 }}
+                        </span>
+                    </td>
+
+                    <td>
+                        {% if payout.utr_number %}
+                        <span class="utr-ref">{{ payout.utr_number }}</span>
+                        {% else %}
+                        <span class="text-muted small">—</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <span class="status-badge
+                            {% if payout.status == 'credited' %}credited
+                            {% elif payout.status == 'failed' %}rejected
+                            {% elif payout.status == 'reversed' %}rejected
+                            {% else %}pending{% endif %}">
+                            {{ payout.get_status_display }}
+                        </span>
+                        {% if payout.failure_reason %}
+                        <p class="text-danger mb-0 mt-1" style="font-size:11px;">
+                            {{ payout.failure_reason|truncatechars:40 }}
+                        </p>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-muted small">
+                        {% if payout.time_to_credit %}
+                        <span class="text-success fw-semibold">{{ payout.time_to_credit }}</span>
+                        {% elif payout.status in 'pending,queued,processing' %}
+                        <span class="text-warning">In progress…</span>
+                        {% else %}—{% endif %}
+                    </td>
+
+                    <td class="text-muted small">
+                        {{ payout.initiated_at|date:"d M Y" }}<br>
+                        <span style="font-size:11px;">{{ payout.initiated_at|date:"H:i" }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-rupee-sign fa-3x text-muted mb-3"></i>
+        <h5 class="fw-bold text-muted">No payouts yet</h5>
+        <p class="text-muted">
+            Payouts appear here automatically within 2 hours of a disruption trigger
+            in your zone. Make sure your
+            <a href="{% url 'workers:account' %}#upi">UPI ID is set</a>
+            and your
+            <a href="{% url 'workers:account' %}#kyc">KYC is verified</a>.
+        </p>
+        <a href="{% url 'workers:dashboard' %}" class="btn btn-primary rounded-pill px-4 mt-2">
+            Go to Dashboard
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ── UPI info strip ──────────────────────────────────────────────────── -->
+<div class="nexura-stat-card mt-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <h6 class="fw-bold mb-1">
+                <i class="fas fa-info-circle text-primary me-2"></i>
+                Your Payout UPI ID
+            </h6>
+            <p class="text-muted mb-0 small">
+                {% if request.user.workerprofile.upi_id %}
+                    <code>{{ request.user.workerprofile.upi_id }}</code>
+                    &nbsp;·&nbsp; All payouts go to this UPI handle.
+                {% else %}
+                    <span class="text-danger">No UPI ID set — payouts will fail!</span>
+                {% endif %}
+            </p>
+        </div>
+        <a href="{% url 'workers:account' %}#upi"
+           class="btn btn-outline-primary rounded-pill px-4 py-2 small">
+            {% if request.user.workerprofile.upi_id %}Update UPI ID{% else %}Add UPI ID{% endif %}
+        </a>
+    </div>
+</div>
+
+{% endblock %}

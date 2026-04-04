@@ -1,0 +1,142 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+{% block title %}Risk Circle — Nexura{% endblock %}
+{% block page_title %}Risk Circle{% endblock %}
+{% block page_subtitle %}Join workers in your zone to share risk and reduce effective premiums.{% endblock %}
+{% block sidebar_circles %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-7">
+
+        {% if circle %}
+        <!-- Active membership -->
+        <div class="nexura-stat-card mb-4">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="stat-icon bg-primary-soft">
+                    <i class="fas fa-users text-primary"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0">{{ circle.name }}</h5>
+                    <p class="text-muted small mb-0">{{ circle.zone.display_name }}</p>
+                </div>
+                <span class="status-badge active ms-auto">Member</span>
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-4 text-center">
+                    <p class="stat-value mb-0">{{ circle.member_count }}</p>
+                    <p class="stat-label mb-0">Members</p>
+                </div>
+                <div class="col-4 text-center">
+                    <p class="stat-value mb-0">₹{{ circle.pool_balance|floatformat:0 }}</p>
+                    <p class="stat-label mb-0">Pool Balance</p>
+                </div>
+                <div class="col-4 text-center">
+                    <p class="stat-value mb-0">₹{{ membership.contribution_total|floatformat:0 }}</p>
+                    <p class="stat-label mb-0">Your Contribution</p>
+                </div>
+            </div>
+            {% if circle.description %}
+            <p class="text-muted small mb-4">{{ circle.description }}</p>
+            {% endif %}
+            <form method="POST" action="{% url 'circles:leave_circle' circle.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger rounded-pill px-4 py-2 small">
+                    Leave Circle
+                </button>
+            </form>
+        </div>
+
+        {% else %}
+        <!-- No membership -->
+        <div class="nexura-alert info mb-4">
+            <span class="alert-icon"><i class="fas fa-info-circle"></i></span>
+            <div>
+                <strong>You haven't joined a Risk Circle yet.</strong>
+                Risk Circles are groups of workers in the same zone who pool small contributions.
+                The pool supplements payouts during high-disruption weeks.
+            </div>
+        </div>
+
+        {% if available_circles %}
+        <div class="nexura-stat-card">
+            <h6 class="fw-bold mb-3 text-uppercase small text-muted">Available Circles in Your Zone</h6>
+            {% for c in available_circles %}
+            <div class="d-flex align-items-center justify-content-between py-3
+                        {% if not forloop.last %}border-bottom{% endif %}">
+                <div>
+                    <p class="fw-semibold mb-0">{{ c.name }}</p>
+                    <p class="text-muted small mb-0">
+                        {{ c.member_count }}/{{ c.max_members }} members ·
+                        Pool: ₹{{ c.pool_balance|floatformat:0 }}
+                    </p>
+                </div>
+                {% if not c.is_full %}
+                <form method="POST" action="{% url 'circles:join_circle' c.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 small">
+                        Join
+                    </button>
+                </form>
+                {% else %}
+                <span class="status-badge paused">Full</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="nexura-stat-card text-center p-5">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No circles in your zone yet</h5>
+            <p class="text-muted small">Circles are created when enough workers in a zone sign up. Check back soon.</p>
+        </div>
+        {% endif %}
+
+        {% endif %}
+
+    </div>
+    <div class="col-lg-5">
+        <div class="nexura-stat-card">
+            <h6 class="fw-bold mb-3 text-uppercase small text-muted">How Risk Circles Work</h6>
+            <div class="d-flex flex-column gap-3">
+                <div class="d-flex gap-3">
+                    <div class="stat-icon bg-primary-soft flex-shrink-0" style="width:40px;height:40px;">
+                        <i class="fas fa-users text-primary" style="font-size:14px;"></i>
+                    </div>
+                    <div>
+                        <p class="fw-semibold mb-1 small">Join Your Local Circle</p>
+                        <p class="text-muted mb-0" style="font-size:12px;">Up to 20 workers from the same zone pool their risk.</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <div class="stat-icon bg-success-soft flex-shrink-0" style="width:40px;height:40px;">
+                        <i class="fas fa-piggy-bank text-success" style="font-size:14px;"></i>
+                    </div>
+                    <div>
+                        <p class="fw-semibold mb-1 small">Pool Builds Up</p>
+                        <p class="text-muted mb-0" style="font-size:12px;">A small portion of each weekly premium goes into the shared pool.</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <div class="stat-icon bg-warning-soft flex-shrink-0" style="width:40px;height:40px;">
+                        <i class="fas fa-bolt text-warning" style="font-size:14px;"></i>
+                    </div>
+                    <div>
+                        <p class="fw-semibold mb-1 small">High-Disruption Week</p>
+                        <p class="text-muted mb-0" style="font-size:12px;">When multiple triggers fire, the pool supplements individual payouts.</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <div class="stat-icon bg-orange-soft flex-shrink-0" style="width:40px;height:40px;">
+                        <i class="fas fa-chart-line" style="font-size:14px;color:var(--nexura-secondary);"></i>
+                    </div>
+                    <div>
+                        <p class="fw-semibold mb-1 small">Lower Effective Premium</p>
+                        <p class="text-muted mb-0" style="font-size:12px;">Over time, shared risk means a lower effective cost per member.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

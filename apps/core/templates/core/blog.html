@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Blog — Nexura News & Updates{% endblock %}
+{% block content %}
+{% include "includes/_breadcrumb.html" with title="Blog" subtitle="News, updates, and gig worker resources" %}
+<div class="container-fluid blog py-5">
+    <div class="container py-4">
+        {% if posts %}
+        <div class="row g-4">
+            {% for post in posts %}
+            <div class="col-lg-4 wow fadeInUp">
+                <div class="blog-item h-100">
+                    <div class="blog-img">
+                        {% if post.cover_image %}
+                        <img src="{{ post.cover_image.url }}" class="img-fluid rounded-top w-100" alt="{{ post.title }}">
+                        {% else %}
+                        <img src="{% static 'img/' %}{{ post.fallback_img|default:'blog-1.png' }}" class="img-fluid rounded-top w-100" alt="{{ post.title }}">
+                        {% endif %}
+                        <div class="blog-categiry py-2 px-4"><span>{{ post.get_category_display }}</span></div>
+                    </div>
+                    <div class="blog-content p-4">
+                        <div class="blog-comment d-flex justify-content-between mb-3 small">
+                            <span><i class="fa fa-user text-primary me-1"></i>{{ post.author_name }}</span>
+                            <span><i class="fa fa-calendar text-primary me-1"></i>{{ post.date_str }}{{ post.published_at|date:"d M Y" }}</span>
+                        </div>
+                        <a href="{% url 'core:blog_post' post.slug %}" class="h5 d-inline-block mb-3">{{ post.title }}</a>
+                        <p class="mb-3 text-muted small">{{ post.excerpt|truncatechars:140 }}</p>
+                        <a href="{% url 'core:blog_post' post.slug %}" class="btn p-0 text-primary">
+                            Read More <i class="fa fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-blog fa-4x text-muted mb-4"></i>
+            <h4 class="text-muted">No posts yet</h4>
+            <p class="text-muted">Check back soon for news and updates.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

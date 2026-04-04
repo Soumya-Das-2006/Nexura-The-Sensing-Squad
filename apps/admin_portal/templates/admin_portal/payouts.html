@@ -1,0 +1,102 @@
+{% extends "base_admin.html" %}
+{% load static nexura_tags %}
+{% block title %}Payouts — Admin | Nexura{% endblock %}
+{% block page_title %}Payouts{% endblock %}
+{% block page_subtitle %}UPI transfer log{% endblock %}
+{% block admin_nav_payouts %}active{% endblock %}
+
+{% block content %}
+<div class="nexura-stat-card mb-4 d-flex gap-2 flex-wrap align-items-center">
+    {% for s, label in "credited:Credited,pending:Pending,queued:Queued,failed:Failed,reversed:Reversed"|split_pairs %}
+    {% endfor %}
+    <a href="{% url 'admin_portal:payouts' %}"
+       class="btn rounded-pill py-1 px-3 small {% if not status_filter %}btn-primary{% else %}btn-light{% endif %}">All</a>
+    <a href="?status=credited"   class="btn rounded-pill py-1 px-3 small {% if status_filter == 'credited'   %}btn-success{% else %}btn-light{% endif %}">✓ Credited</a>
+    <a href="?status=pending"    class="btn rounded-pill py-1 px-3 small {% if status_filter == 'pending'    %}btn-warning{% else %}btn-light{% endif %}">⏳ Pending</a>
+    <a href="?status=queued"     class="btn rounded-pill py-1 px-3 small {% if status_filter == 'queued'     %}btn-info{% else %}btn-light{% endif %}">→ Queued</a>
+    <a href="?status=failed"     class="btn rounded-pill py-1 px-3 small {% if status_filter == 'failed'     %}btn-danger{% else %}btn-light{% endif %}">✗ Failed</a>
+    <a href="?status=reversed"   class="btn rounded-pill py-1 px-3 small {% if status_filter == 'reversed'   %}btn-secondary{% else %}btn-light{% endif %}">↩ Reversed</a>
+</div>
+
+<div class="nexura-stat-card">
+    {% if payouts %}
+    <div class="table-responsive">
+        <table class="nexura-table">
+            <thead>
+                <tr>
+                    <th>#</th><th>Worker</th><th>Amount</th><th>UPI / UTR</th>
+                    <th>Claim</th><th>Status</th><th>Speed</th><th>Date</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payout in payouts %}
+                <tr>
+                    <td class="text-muted small">{{ payout.pk }}</td>
+                    <td class="small fw-semibold">{{ payout.worker.mobile }}</td>
+                    <td class="fw-bold {% if payout.status == 'credited' %}text-success{% endif %}">
+                        ₹{{ payout.amount|floatformat:0 }}
+                    </td>
+                    <td>
+                        {% if payout.utr_number %}
+                        <span class="utr-ref">{{ payout.utr_number }}</span>
+                        {% elif payout.razorpay_payout_id %}
+                        <span class="utr-ref">{{ payout.razorpay_payout_id|truncatechars:20 }}</span>
+                        {% else %}<span class="text-muted small">—</span>{% endif %}
+                    </td>
+                    <td class="text-muted small">
+                        {% if payout.claim %}
+                        <a href="{% url 'admin_portal:claims' %}?pk={{ payout.claim.pk }}" class="text-primary">
+                            #{{ payout.claim.pk }}
+                        </a>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge
+                            {% if payout.status == 'credited' %}credited
+                            {% elif payout.status == 'failed' or payout.status == 'reversed' %}rejected
+                            {% else %}pending{% endif %}" style="font-size:10px;">
+                            {{ payout.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="small {% if payout.time_to_credit %}text-success{% else %}text-muted{% endif %}">
+                        {{ payout.time_to_credit|default:"—" }}
+                    </td>
+                    <td class="text-muted small">{{ payout.initiated_at|date:"d M Y H:i" }}</td>
+                    <td>
+                        {% if payout.status == 'failed' %}
+                        <form method="POST" action="/django-admin/payouts/payout/{{ payout.pk }}/change/" class="d-inline">
+                            {% csrf_token %}
+                            <button type="button"
+                                    onclick="retryPayout({{ payout.pk }})"
+                                    class="btn btn-warning btn-sm rounded-pill px-2 small">
+                                Retry
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-rupee-sign fa-3x text-muted mb-3"></i>
+        <p class="text-muted">No payouts found.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function retryPayout(id) {
+    if (!confirm('Retry this payout?')) return;
+    fetch('/api/v1/payouts/' + id + '/retry/', {
+        method: 'POST',
+        headers: {'X-CSRFToken':'{{ csrf_token }}','Content-Type':'application/json'},
+    }).then(r => r.json()).then(d => { alert(d.message || 'Queued.'); location.reload(); })
+      .catch(() => alert('Error retrying payout.'));
+}
+</script>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+{% block title %}Support — Nexura{% endblock %}
+{% block page_title %}Support Tickets{% endblock %}
+{% block page_subtitle %}Raise an issue or track your existing tickets.{% endblock %}
+{% block sidebar_account %}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+  <!-- New Ticket Form -->
+  <div class="col-lg-5">
+    <div class="nexura-stat-card">
+      <h6 class="fw-bold mb-4">
+        <i class="fas fa-plus-circle text-primary me-2"></i>Raise a New Ticket
+      </h6>
+      <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Category</label>
+          <select name="category" class="form-select">
+            {% for val, label in categories %}
+            <option value="{{ val }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Subject *</label>
+          <input type="text" name="subject" class="form-control" placeholder="Brief summary of your issue" required maxlength="200">
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Description *</label>
+          <textarea name="description" class="form-control" rows="4" placeholder="Describe your issue in detail…" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-semibold">
+          <i class="fas fa-paper-plane me-2"></i>Submit Ticket
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Ticket List -->
+  <div class="col-lg-7">
+    <div class="nexura-stat-card">
+      <h6 class="fw-bold mb-4">
+        <i class="fas fa-list text-primary me-2"></i>Your Tickets
+        <span class="badge bg-primary ms-2">{{ tickets|length }}</span>
+      </h6>
+      {% if tickets %}
+      <div class="table-responsive">
+        <table class="nexura-table">
+          <thead>
+            <tr><th>#</th><th>Subject</th><th>Category</th><th>Status</th><th>Date</th></tr>
+          </thead>
+          <tbody>
+            {% for t in tickets %}
+            <tr>
+              <td class="small fw-bold text-muted">#{{ t.pk }}</td>
+              <td>
+                <p class="small fw-semibold mb-1">{{ t.subject }}</p>
+                <p class="text-muted mb-0" style="font-size:11px;">{{ t.description|truncatechars:60 }}</p>
+                {% if t.admin_response %}
+                <div class="d-flex align-items-start gap-2 mt-2 p-2 rounded" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+                  <i class="fas fa-reply text-success mt-1" style="font-size:11px;"></i>
+                  <span style="font-size:11px;color:#166534;">{{ t.admin_response }}</span>
+                </div>
+                {% endif %}
+              </td>
+              <td class="small">{{ t.get_category_display }}</td>
+              <td>
+                <span class="status-badge {% if t.status == 'open' %}pending{% elif t.status == 'resolved' %}active{% elif t.status == 'in_progress' %}credited{% else %}paused{% endif %}">
+                  {{ t.get_status_display }}
+                </span>
+              </td>
+              <td class="small text-muted">{{ t.created_at|date:"d M Y" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-headset text-muted" style="font-size:3rem; opacity:.3;"></i>
+        <p class="text-muted mt-3">No tickets yet. Use the form to raise an issue.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

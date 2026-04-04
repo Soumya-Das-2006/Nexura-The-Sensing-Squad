@@ -1,0 +1,545 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nexura — AI Income Protection for India's Gig Workers{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO CAROUSEL
+═══════════════════════════════════════════════════════════ -->
+<div class="header-carousel owl-carousel">
+
+    <!-- Slide 1 -->
+    <div class="header-carousel-item bg-primary">
+        <div class="carousel-caption">
+            <div class="container">
+                <div class="row g-4 align-items-center">
+                    <div class="col-lg-7 animated fadeInLeft">
+                        <h4 class="text-white text-uppercase fw-bold mb-3 small">
+                            <i class="fas fa-shield-alt me-2"></i>AI-Powered Parametric Insurance
+                        </h4>
+                        <h1 class="display-2 text-white fw-black mb-4" style="line-height:1.1;">
+                            Your Income,<br>Protected<br>
+                            <span style="color: #fbbf24;">Automatically.</span>
+                        </h1>
+                        <p class="mb-4 fs-5 text-white-75">
+                            Disruption detected → auto claim → AI fraud check → UPI payout in under 2 hours.
+                            Zero paperwork. Zero phone calls. Zero action needed from you.
+                        </p>
+                        <div class="d-flex flex-wrap gap-3 mb-4">
+                            <a class="btn btn-light rounded-pill py-3 px-5 fw-semibold"
+                               href="{% url 'accounts:register' %}">
+                                <i class="fas fa-shield-alt me-2"></i>Get Protected — ₹29/week
+                            </a>
+                            <a class="btn btn-outline-light rounded-pill py-3 px-5"
+                               href="{% url 'core:how_it_works' %}">
+                                How It Works <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                        <!-- Platform chips -->
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <small class="text-white-50 me-1">Works on:</small>
+                            {% for p in platforms %}
+                            <span class="badge bg-white bg-opacity-20 text-dark px-3 py-2 rounded-pill"
+                                  style="font-size: 12px;">{{ p.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-lg-5 animated fadeInRight text-center">
+                        <!-- Stats card overlay on hero -->
+                        <div class="row g-3">
+                            {% for stat in stats %}
+                            <div class="col-6">
+                                <div class="bg-white bg-opacity-15 rounded-3 p-4 text-center">
+                                    <i class="{{ stat.icon }} fa-2x text-primary mb-2"></i>
+                                    <h3 class="text-dark fw-black mb-1">{{ stat.value }}</h3>
+                                    <p class="text-muted mb-0 small">{{ stat.label }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="header-carousel-item bg-primary">
+        <div class="carousel-caption">
+            <div class="container">
+                <div class="row g-4 align-items-center">
+                    <div class="col-lg-6 animated fadeInLeft">
+                        <div class="row g-3">
+                            {% for trigger in triggers %}
+                            <div class="col-6">
+                                <div class="{{ trigger.bg }} rounded-3 p-3 text-center">
+                                    <i class="{{ trigger.icon }} fa-2x {{ trigger.color }} mb-2"></i>
+                                    <p class="fw-semibold mb-0 small text-dark">{{ trigger.name }}</p>
+                                    <small class="text-muted">{{ trigger.threshold }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-lg-6 animated fadeInRight">
+                        <h4 class="text-white text-uppercase fw-bold mb-3 small">
+                            <i class="fas fa-bolt me-2"></i>6 Trigger Types
+                        </h4>
+                        <h1 class="display-2 text-white fw-black mb-4" style="line-height:1.1;">
+                            We Watch.<br>
+                            <span style="color: #fbbf24;">You Earn.</span>
+                        </h1>
+                        <p class="mb-4 fs-5 text-white-75">
+                            Heavy rain, extreme heat, severe AQI, flash floods, curfews,
+                            and platform outages — all monitored 24/7 by our AI engine.
+                        </p>
+                        <a class="btn btn-light rounded-pill py-3 px-5 fw-semibold"
+                           href="{% url 'policies:plans' %}">
+                            View Plans <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- Hero End -->
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     FEATURES STRIP
+═══════════════════════════════════════════════════════════ -->
+<div class="container-fluid feature bg-light py-5">
+    <div class="container py-5">
+        <div class="text-center mx-auto pb-5 wow fadeInUp" style="max-width: 700px;">
+            <h4 class="text-primary text-uppercase small fw-bold">Why Nexura</h4>
+            <h2 class="display-5 fw-bold mb-3">Income Protection Built for India's Gig Economy</h2>
+            <p class="text-muted">The first fully parametric insurance product designed around how delivery workers actually lose income.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-xl-3 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4">
+                        <i class="fas fa-robot fa-3x"></i>
+                    </div>
+                    <h5 class="mb-3">Zero-Touch Claims</h5>
+                    <p class="mb-4">No forms, no calls, no agents. Our AI monitors your city and files your claim the moment a trigger fires.</p>
+                    <a class="btn btn-primary rounded-pill py-2 px-4" href="{% url 'core:how_it_works' %}">Learn More</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3 wow fadeInUp" data-wow-delay="0.2s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4">
+                        <i class="fas fa-bolt fa-3x"></i>
+                    </div>
+                    <h5 class="mb-3">Under 2-Hour Payout</h5>
+                    <p class="mb-4">Razorpay UPI Payouts API sends money directly to your UPI ID. You get a WhatsApp notification with UTR proof.</p>
+                    <a class="btn btn-primary rounded-pill py-2 px-4" href="{% url 'core:features' %}">Learn More</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4">
+                        <i class="fas fa-rupee-sign fa-3x"></i>
+                    </div>
+                    <h5 class="mb-3">Starts at ₹29/Week</h5>
+                    <p class="mb-4">Less than a single delivery commission. Weekly UPI Autopay, cancel anytime, no hidden charges.</p>
+                    <a class="btn btn-primary rounded-pill py-2 px-4" href="{% url 'policies:plans' %}">See Plans</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3 wow fadeInUp" data-wow-delay="0.4s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4">
+                        <i class="fas fa-user-shield fa-3x"></i>
+                    </div>
+                    <h5 class="mb-3">AI Fraud Protection</h5>
+                    <p class="mb-4">6-layer fraud pipeline with Isolation Forest + XGBoost ensures fair claims for genuine workers only.</p>
+                    <a class="btn btn-primary rounded-pill py-2 px-4" href="{% url 'core:features' %}">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     HOW IT WORKS — 3-STEP STRIP
+═══════════════════════════════════════════════════════════ -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="text-center mx-auto pb-5 wow fadeInUp" style="max-width: 700px;">
+            <h4 class="text-primary text-uppercase small fw-bold">Simple Process</h4>
+            <h2 class="display-5 fw-bold mb-3">Three Steps to Full Protection</h2>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4 text-center wow fadeInUp" data-wow-delay="0.1s">
+                <div class="position-relative d-inline-flex align-items-center justify-content-center
+                            bg-primary text-white rounded-circle mb-4"
+                     style="width:80px;height:80px;font-size:28px;font-weight:800;">
+                    1
+                </div>
+                <h5 class="fw-bold mb-2">Register & Choose Plan</h5>
+                <p class="text-muted">Mobile OTP → KYC → pick your shield. Done in 3 minutes.</p>
+            </div>
+            <div class="col-md-4 text-center wow fadeInUp" data-wow-delay="0.2s">
+                <div class="position-relative d-inline-flex align-items-center justify-content-center
+                            bg-primary text-white rounded-circle mb-4"
+                     style="width:80px;height:80px;font-size:28px;font-weight:800;">
+                    2
+                </div>
+                <h5 class="fw-bold mb-2">We Monitor Your City</h5>
+                <p class="text-muted">Weather, AQI, platform status — checked automatically every 5–30 minutes.</p>
+            </div>
+            <div class="col-md-4 text-center wow fadeInUp" data-wow-delay="0.3s">
+                <div class="position-relative d-inline-flex align-items-center justify-content-center
+                            bg-primary text-white rounded-circle mb-4"
+                     style="width:80px;height:80px;font-size:28px;font-weight:800;">
+                    3
+                </div>
+                <h5 class="fw-bold mb-2">Get Paid Automatically</h5>
+                <p class="text-muted">Disruption fires → AI approves → UPI payout in under 2 hours. No action from you.</p>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'core:how_it_works' %}" class="btn btn-outline-primary rounded-pill py-3 px-5">
+                Full Step-by-Step Guide <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     PLANS
+═══════════════════════════════════════════════════════════ -->
+<div class="container-fluid bg-light py-5">
+    <div class="container py-5">
+        <div class="text-center mx-auto pb-5 wow fadeInUp" style="max-width: 700px;">
+            <h4 class="text-primary text-uppercase small fw-bold">Pricing</h4>
+            <h2 class="display-5 fw-bold mb-3">Choose Your Shield</h2>
+            <p class="text-muted">All plans include automatic claim filing, UPI payout, and WhatsApp notifications. Cancel anytime.</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            {% for plan in plans %}
+            <div class="col-lg-4 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
+                <div class="plan-card h-100 {% if plan.recommended %}recommended{% endif %}">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center
+                                    bg-primary bg-opacity-10 rounded-circle mb-3"
+                             style="width:60px;height:60px;">
+                            <i class="{{ plan.icon }} text-primary fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1">{{ plan.name }}</h4>
+                        <div class="plan-premium">₹{{ plan.weekly_premium }}</div>
+                        <div class="plan-coverage">per week &nbsp;·&nbsp; ₹{{ plan.weekly_coverage }} coverage</div>
+                    </div>
+                    <ul class="list-unstyled mb-4">
+                        {% for feature in plan.features %}
+                        <li class="plan-feature mb-2">
+                            <i class="fas fa-check-circle"></i>
+                            {{ feature }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{% url 'accounts:register' %}?plan={{ plan.slug }}"
+                       class="btn {% if plan.recommended %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill py-3 w-100 fw-semibold">
+                        Get {{ plan.name }}
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     TRIGGER TYPES
+═══════════════════════════════════════════════════════════ -->
+<div class="container-fluid service py-5">
+    <div class="container py-5">
+        <div class="text-center mx-auto pb-5 wow fadeInUp" style="max-width: 700px;">
+            <h4 class="text-primary text-uppercase small fw-bold">Coverage Events</h4>
+            <h2 class="display-5 fw-bold mb-3">6 Triggers That Protect Your Income</h2>
+            <p class="text-muted">Every trigger is verified against real-time data before a claim is filed. No ambiguity. No disputes.</p>
+        </div>
+        <div class="row g-4">
+            {% for trigger in triggers %}
+            <div class="col-md-6 col-xl-4 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
+                <div class="{{ trigger.bg }} rounded-3 p-4 h-100 border" style="border-color: #e2e8f0 !important;">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle bg-white d-flex align-items-center justify-content-center shadow-sm"
+                                 style="width:52px;height:52px;">
+                                <i class="{{ trigger.icon }} {{ trigger.color }} fa-xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">{{ trigger.name }}</h6>
+                            <span class="badge rounded-pill mb-2" style="font-size:11px; background:#eaf2ff; color:#0b63ce; border:1px solid #cfe0ff;">
+                                Threshold: {{ trigger.threshold }}
+                            </span>
+                            <p class="text-muted mb-0 small">{{ trigger.description }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     PREMIUM CALCULATOR
+═══════════════════════════════════════════════════════════ -->
+<div class="container-fluid bg-primary py-5">
+    <div class="container py-4">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-5 wow fadeInLeft text-white">
+                <h4 class="text-uppercase small fw-bold mb-3" style="color: #fbbf24;">
+                    <i class="fas fa-calculator me-2"></i>Premium Calculator
+                </h4>
+                <h2 class="display-5 fw-bold mb-3">Find Your Perfect Plan</h2>
+                <p class="text-white-75 mb-4">
+                    Enter your city and preferred coverage to see your estimated weekly premium.
+                    Actual pricing uses our XGBoost risk model.
+                </p>
+                <div class="d-flex flex-column gap-3" id="calcResult" style="display:none !important;">
+                    <div class="bg-white bg-opacity-15 rounded-3 p-4">
+                        <p class="text-white-50 mb-1 small">Your estimated weekly premium</p>
+                        <h2 class="text-white fw-black mb-0" id="calcPremium">—</h2>
+                        <p class="text-white-50 mb-0 small" id="calcCoverage"></p>
+                    </div>
+                    <a href="{% url 'accounts:register' %}" id="calcCTA"
+                       class="btn btn-light rounded-pill py-3 fw-semibold">
+                        Get This Plan <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-7 wow fadeInRight">
+                <div class="bg-white rounded-4 p-4 shadow">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Your City</label>
+                            <select class="form-select" id="calcCity">
+                                <option value="Mumbai">Mumbai</option>
+                                <option value="Delhi">Delhi / NCR</option>
+                                <option value="Bangalore">Bangalore</option>
+                                <option value="Chennai">Chennai</option>
+                                <option value="Hyderabad">Hyderabad</option>
+                                <option value="Kolkata">Kolkata</option>
+                                <option value="Pune">Pune</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Coverage Plan</label>
+                            <select class="form-select" id="calcPlan">
+                                <option value="basic">Basic Shield (₹500 coverage)</option>
+                                <option value="standard" selected>Standard Shield (₹1,000 coverage)</option>
+                                <option value="premium">Premium Shield (₹2,000 coverage)</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">
+                                Hours worked per week: <span id="hoursLabel">40</span> hrs
+                            </label>
+                            <input type="range" class="form-range" id="calcHours"
+                                   min="10" max="84" value="40" step="2">
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary rounded-pill py-3 px-5 w-100 fw-semibold"
+                                    id="calcBtn">
+                                <i class="fas fa-calculator me-2"></i>Calculate My Premium
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     FAQ STRIP
+═══════════════════════════════════════════════════════════ -->
+{% if faqs %}
+<div class="container-fluid faq-section bg-light py-5">
+    <div class="container py-5">
+        <div class="row g-5 align-items-center">
+            <div class="col-xl-5 wow fadeInLeft">
+                <h4 class="text-primary text-uppercase small fw-bold mb-3">FAQs</h4>
+                <h2 class="display-5 fw-bold mb-4">Common Questions</h2>
+                <p class="text-muted mb-4">
+                    Everything you need to know about Nexura's parametric insurance,
+                    triggers, payouts, and coverage.
+                </p>
+                <a href="{% url 'core:faq' %}" class="btn btn-primary rounded-pill py-3 px-5">
+                    All FAQs <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+            <div class="col-xl-7 wow fadeInRight">
+                <div class="accordion" id="homeFAQ">
+                    {% for faq_item in faqs %}
+                    <div class="accordion-item border-0 mb-2 rounded overflow-hidden">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} rounded"
+                                    type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faq{{ forloop.counter }}">
+                                {{ faq_item.question }}
+                            </button>
+                        </h2>
+                        <div id="faq{{ forloop.counter }}"
+                             class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                             data-bs-parent="#homeFAQ">
+                            <div class="accordion-body text-muted">
+                                {{ faq_item.answer }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     BLOG STRIP
+═══════════════════════════════════════════════════════════ -->
+{% if recent_posts %}
+<div class="container-fluid blog py-5">
+    <div class="container py-5">
+        <div class="text-center mx-auto pb-5 wow fadeInUp" style="max-width: 600px;">
+            <h4 class="text-primary text-uppercase small fw-bold">From the Blog</h4>
+            <h2 class="display-5 fw-bold">News & Updates</h2>
+        </div>
+        <div class="row g-4 justify-content-center">
+            {% for post in recent_posts %}
+            <div class="col-lg-4 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
+                <div class="blog-item">
+                    <div class="blog-img">
+                        <img src="{{ post.cover_image_url }}" class="img-fluid rounded-top w-100" alt="{{ post.title }}">
+                        <div class="blog-categiry py-2 px-4">
+                            <span>{{ post.get_category_display }}</span>
+                        </div>
+                    </div>
+                    <div class="blog-content p-4">
+                        <div class="blog-comment d-flex justify-content-between mb-3 small">
+                            <span><i class="fa fa-user text-primary me-1"></i>{{ post.author_name }}</span>
+                            <span><i class="fa fa-calendar text-primary me-1"></i>{{ post.published_at|date:"d M Y" }}</span>
+                        </div>
+                        <a href="{% url 'core:blog_post' post.slug %}" class="h5 d-inline-block mb-3">
+                            {{ post.title }}
+                        </a>
+                        <p class="mb-3 text-muted small">{{ post.excerpt|truncatechars:120 }}</p>
+                        <a href="{% url 'core:blog_post' post.slug %}" class="btn p-0 text-primary">
+                            Read More <i class="fa fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'core:blog' %}" class="btn btn-outline-primary rounded-pill py-3 px-5">
+                All Articles <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     FINAL CTA BAND
+═══════════════════════════════════════════════════════════ -->
+<div class="container-fluid bg-dark py-5">
+    <div class="container py-4 text-center">
+        <div class="wow fadeInUp" style="max-width: 600px; margin: 0 auto;">
+            <h2 class="display-5 fw-bold text-white mb-3">
+                Start Protecting Your Income Today
+            </h2>
+            <p class="text-white-50 fs-5 mb-4">
+                Join thousands of gig workers across 7 Indian cities who get paid automatically
+                when disruption strikes.
+            </p>
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <a href="{% url 'accounts:register' %}"
+                   class="btn btn-primary rounded-pill py-3 px-5 fw-semibold fs-5">
+                    <i class="fas fa-shield-alt me-2"></i>Get Protected — ₹29/week
+                </a>
+                <a href="{% url 'core:contact' %}"
+                   class="btn btn-outline-light rounded-pill py-3 px-5 fw-semibold fs-5">
+                    Talk to Us
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+// ── Premium Calculator ──────────────────────────────────────────────────────
+const hoursInput  = document.getElementById('calcHours');
+const hoursLabel  = document.getElementById('hoursLabel');
+const calcBtn     = document.getElementById('calcBtn');
+const calcResult  = document.getElementById('calcResult');
+const calcPremium = document.getElementById('calcPremium');
+const calcCoverage = document.getElementById('calcCoverage');
+const calcCTA     = document.getElementById('calcCTA');
+
+if (hoursInput) {
+    hoursInput.addEventListener('input', () => {
+        hoursLabel.textContent = hoursInput.value;
+    });
+}
+
+if (calcBtn) {
+    calcBtn.addEventListener('click', async () => {
+        calcBtn.disabled = true;
+        calcBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Calculating…';
+
+        try {
+            const res = await fetch('/api/v1/pricing/calculate/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({
+                    city:          document.getElementById('calcCity').value,
+                    plan:          document.getElementById('calcPlan').value,
+                    hours_per_week: parseInt(hoursInput.value),
+                }),
+            });
+            const data = await res.json();
+
+            if (data.status === 'ok') {
+                calcPremium.textContent  = `₹${data.weekly_premium}/week`;
+                calcCoverage.textContent = `Coverage: ₹${data.weekly_coverage} per event`;
+                calcCTA.href = `{% url 'accounts:register' %}?plan=${data.plan}`;
+                calcResult.style.display = 'flex';
+                calcResult.style.flexDirection = 'column';
+                calcResult.style.gap = '12px';
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            calcBtn.disabled = false;
+            calcBtn.innerHTML = '<i class="fas fa-calculator me-2"></i>Calculate My Premium';
+        }
+    });
+}
+</script>
+{% endblock %}

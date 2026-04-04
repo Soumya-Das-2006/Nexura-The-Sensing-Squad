@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Covered Cities — Nexura{% endblock %}
+{% block content %}
+{% include "includes/_breadcrumb.html" with title="Covered Cities" subtitle="7 cities, 73+ zones across India" %}
+<div class="container-fluid py-5">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h4 class="text-primary fw-bold text-uppercase small">Coverage</h4>
+            <h2 class="display-5 fw-bold">{{ total_zones }}+ Zones Across {{ cities|length }} Cities</h2>
+            <p class="text-muted">More cities coming in 2026. If your city is not listed, <a href="{% url 'core:contact' %}">let us know</a>.</p>
+        </div>
+        <div class="row g-4">
+            {% for city in cities %}
+            <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
+                <div class="nexura-stat-card h-100">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="stat-icon bg-{{ city.color }}-soft">
+                            <i class="{{ city.icon }} text-{{ city.color }}"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">{{ city.name }}</h5>
+                            <small class="text-muted">{{ city.state }}</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">{{ city.description }}</p>
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">
+                        {{ city.zones }} zones covered
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'accounts:register' %}" class="btn btn-primary rounded-pill py-3 px-5">
+                <i class="fas fa-shield-alt me-2"></i>Get Protected in Your City
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

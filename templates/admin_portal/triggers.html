@@ -1,0 +1,101 @@
+{% extends "base_admin.html" %}
+{% load static nexura_tags %}
+{% block title %}Disruption Events — Admin | Nexura{% endblock %}
+{% block page_title %}Disruption Events{% endblock %}
+{% block page_subtitle %}Live trigger log — auto-updates claims pipeline{% endblock %}
+{% block admin_nav_triggers %}active{% endblock %}
+
+{% block content %}
+<div class="nexura-stat-card mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div class="d-flex gap-2 flex-wrap">
+        {% for t, label in "heavy_rain:Rain,extreme_heat:Heat,severe_aqi:AQI,flash_flood:Flood,curfew_strike:Curfew,platform_down:Platform"|split_pairs %}{% endfor %}
+        <a href="{% url 'admin_portal:triggers' %}" class="btn btn-primary rounded-pill py-1 px-3 small">All</a>
+    </div>
+    <form method="POST" action="/api/v1/triggers/fire/" class="d-flex gap-2 align-items-center">
+        {% csrf_token %}
+        <button type="button" onclick="fireManualTrigger()"
+                class="btn btn-danger rounded-pill py-1 px-3 small">
+            <i class="fas fa-bolt me-1"></i>Fire Test Trigger
+        </button>
+    </form>
+</div>
+
+<div class="nexura-stat-card">
+    {% if events %}
+    <div class="table-responsive">
+        <table class="nexura-table">
+            <thead>
+                <tr>
+                    <th>#</th><th>Trigger</th><th>Zone</th><th>Severity</th>
+                    <th>Full</th><th>Claims</th><th>Source</th><th>Started</th><th>Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td class="text-muted small">{{ event.pk }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="{{ event.icon }} text-{{ event.color }}"></i>
+                            <span class="small fw-semibold">{{ event.get_trigger_type_display }}</span>
+                        </div>
+                    </td>
+                    <td class="small">{{ event.zone.display_name }}</td>
+                    <td class="fw-semibold small">
+                        {{ event.severity_value|floatformat:1 }}
+                        <span class="text-muted">/{{ event.threshold_value|floatformat:0 }}</span>
+                    </td>
+                    <td>
+                        {% if event.is_full_trigger %}
+                        <span class="status-badge active" style="font-size:10px;">Full</span>
+                        {% else %}
+                        <span class="status-badge paused" style="font-size:10px;">Partial</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if event.claims_generated %}
+                        <span class="text-success small"><i class="fas fa-check me-1"></i>Done</span>
+                        {% else %}
+                        <span class="text-warning small"><i class="fas fa-clock me-1"></i>Pending</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small">{{ event.source_api|default:"—" }}</td>
+                    <td class="text-muted small">{{ event.started_at|date:"d M H:i" }}</td>
+                    <td class="text-muted small">
+                        {% if event.duration_hours %}{{ event.duration_hours|floatformat:1 }}h{% else %}Open{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-bolt fa-3x text-muted mb-3"></i>
+        <p class="text-muted">No disruption events recorded yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function fireManualTrigger() {
+    const zoneId  = prompt('Zone ID (check /admin-portal/zones/):');
+    if (!zoneId) return;
+    const type    = prompt('Trigger type:\nheavy_rain / extreme_heat / severe_aqi / flash_flood / curfew_strike / platform_down');
+    if (!type) return;
+    const sev     = prompt('Severity value (e.g. 42.0 for rain mm/hr, 45 for °C):');
+    if (!sev) return;
+
+    fetch('/api/v1/triggers/fire/', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+        body: JSON.stringify({zone_id: parseInt(zoneId), trigger_type: type, severity: parseFloat(sev), is_full: true}),
+    })
+    .then(r => r.json())
+    .then(d => { alert('Trigger fired: ' + JSON.stringify(d)); location.reload(); })
+    .catch(() => alert('Error firing trigger.'));
+}
+</script>
+{% endblock %}

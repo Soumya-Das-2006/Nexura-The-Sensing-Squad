@@ -1,0 +1,89 @@
+MIT License
+
+Copyright (c) 2026 NexAura Team
+Guidewire DEVTrails Hackathon — Parul University, Vadodara, India
+
+Team Members:
+  Soumya Das         — Full-Stack Development
+  Tanisha            — UI/UX & Frontend Development
+  Rimi Banerjee      — Backend Architecture & DevOps
+  N. Kamakshi Lakshmi Bhai — UI/UX Design
+  Jagyanseni Paikaraya    — AI/ML Engineering
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-------------------------------------------------------------------------------
+
+DISCLAIMER
+
+NexAura is a hackathon prototype built for educational and demonstration
+purposes at the Guidewire DEVTrails 2026 University Hackathon. It is NOT:
+
+  - A licensed insurance product
+  - A regulated financial service
+  - Approved by IRDAI (Insurance Regulatory and Development Authority of India)
+  - Suitable for production use without appropriate regulatory approval
+
+The parametric insurance model, payout amounts, and coverage terms described
+in this software are for demonstration only. Any use of this software in a
+real financial product requires full compliance with applicable Indian laws
+including but not limited to the Insurance Act 1938, IRDAI regulations, and
+the Payment and Settlement Systems Act 2007.
+
+The ML models (XGBoost, IsolationForest, Prophet) included in this repository
+were trained on synthetic datasets for demonstration. They should not be relied
+upon for real financial decisions without retraining on actual production data
+and independent validation.
+
+-------------------------------------------------------------------------------
+
+THIRD-PARTY LICENSES
+
+This software uses the following open-source libraries:
+
+  Django             — BSD 3-Clause License
+  Django REST Framework — BSD 2-Clause License
+  Celery             — BSD 3-Clause License
+  scikit-learn       — BSD 3-Clause License
+  XGBoost            — Apache License 2.0
+  Prophet (Facebook) — MIT License
+  ReportLab          — BSD License
+  Razorpay Python    — MIT License
+  Bootstrap 5        — MIT License
+  jQuery             — MIT License
+  OWL Carousel 2     — MIT License
+  WOW.js             — MIT License
+  Animate.css        — MIT License
+  Font Awesome       — Font Awesome Free License
+
+Full license texts for all dependencies are available via:
+  pip show 
+
+-------------------------------------------------------------------------------
+
+ATTRIBUTION
+
+If you use NexAura as a reference, base, or inspiration for your own project,
+we appreciate (but do not require) attribution in the following form:
+
+  "Based on NexAura by Soumya Das, Tanisha, Rimi Banerjee,
+   N. Kamakshi Lakshmi Bhai, and Jagyanseni Paikaraya
+   — Guidewire DEVTrails Hackathon 2026"
+
+-------------------------------------------------------------------------------

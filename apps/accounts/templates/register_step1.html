@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register — Nexura Income Protection{% endblock %}
+{% block topbar %}{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block whatsapp_float %}{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex" style="background: linear-gradient(135deg, #015fc9 0%, #0369a1 100%);">
+
+    <!-- Left brand panel -->
+    <div class="d-none d-lg-flex flex-column justify-content-center align-items-center col-lg-5 p-5 text-white">
+        <a href="{% url 'core:home' %}" class="text-decoration-none mb-5">
+            <h1 class="text-white fw-black d-flex align-items-center gap-3">
+                <i class="fas fa-shield-alt"></i> Nexura
+            </h1>
+        </a>
+        <h2 class="display-6 fw-bold mb-4 text-center">
+            Protect Your Income in 3 Minutes
+        </h2>
+        <div class="d-flex flex-column gap-3 w-100" style="max-width: 340px;">
+            <div class="d-flex align-items-center gap-3 bg-white bg-opacity-15 rounded-3 p-3">
+                <div class="bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                     style="width:40px;height:40px;">
+                    <i class="fas fa-mobile-alt text-white"></i>
+                </div>
+                <div>
+                    <p class="fw-semibold mb-0">Step 1 — Mobile OTP</p>
+                    <p class="text-white-50 mb-0 small">Verify your number in seconds</p>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 bg-white bg-opacity-10 rounded-3 p-3">
+                <div class="bg-white bg-opacity-15 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                     style="width:40px;height:40px;">
+                    <i class="fas fa-user text-white-50"></i>
+                </div>
+                <div>
+                    <p class="fw-semibold mb-0 text-white-75">Step 2 — Your Profile</p>
+                    <p class="text-white-50 mb-0 small">Name, platform, zone</p>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 bg-white bg-opacity-10 rounded-3 p-3">
+                <div class="bg-white bg-opacity-15 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                     style="width:40px;height:40px;">
+                    <i class="fas fa-shield-alt text-white-50"></i>
+                </div>
+                <div>
+                    <p class="fw-semibold mb-0 text-white-75">Step 3 — Choose Plan</p>
+                    <p class="text-white-50 mb-0 small">Starting at ₹29/week</p>
+                </div>
+            </div>
+        </div>
+        <div class="mt-5 d-flex flex-wrap gap-2 justify-content-center">
+            {% for p in nexura.supported_platforms %}
+            <span class="badge bg-white bg-opacity-20 text-white px-3 py-2 rounded-pill small">{{ p }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="flex-fill d-flex align-items-center justify-content-center p-4"
+         style="background: #f8fafc;">
+        <div style="width: 100%; max-width: 420px;">
+
+            <!-- Mobile nav brand -->
+            <a href="{% url 'core:home' %}" class="d-lg-none text-decoration-none d-block mb-4 text-center">
+                <h3 class="text-primary fw-black"><i class="fas fa-shield-alt me-2"></i>Nexura</h3>
+            </a>
+
+            <!-- Progress -->
+            <div class="reg-steps mb-4">
+                <div class="reg-step active">
+                    <div class="reg-step-dot">1</div>
+                    <div class="reg-step-label">Mobile</div>
+                </div>
+                <div class="reg-step-connector"></div>
+                <div class="reg-step">
+                    <div class="reg-step-dot">2</div>
+                    <div class="reg-step-label">Verify</div>
+                </div>
+                <div class="reg-step-connector"></div>
+                <div class="reg-step">
+                    <div class="reg-step-dot">3</div>
+                    <div class="reg-step-label">Profile</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-4 shadow-sm p-5">
+                <h4 class="fw-bold mb-1">Enter Your Mobile Number</h4>
+                <p class="text-muted mb-4 small">We'll send you a 6-digit OTP to verify your number.</p>
+
+                {% include "includes/_messages.html" %}
+
+                <form method="POST" action="{% url 'accounts:register' %}?plan={{ plan }}">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small">Mobile Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted fw-semibold">+91</span>
+                            <input type="tel" name="mobile" class="form-control border-start-0 ps-0"
+                                   placeholder="9XXXXXXXXX" maxlength="10"
+                                   inputmode="numeric" pattern="[0-9]{10}"
+                                   autofocus required
+                                   value="{{ request.POST.mobile|default:'' }}">
+                        </div>
+                        <div class="form-text">10-digit number without country code.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary rounded-pill py-3 w-100 fw-semibold">
+                        <i class="fas fa-paper-plane me-2"></i>Send OTP
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="text-muted small mb-0">
+                        Already have an account?
+                        <a href="{% url 'accounts:login' %}" class="text-primary fw-semibold">Login</a>
+                    </p>
+                </div>
+            </div>
+
+            <p class="text-center text-muted mt-4 small">
+                By registering, you agree to our
+                <a href="{% url 'core:terms' %}">Terms of Service</a> and
+                <a href="{% url 'core:privacy' %}">Privacy Policy</a>.
+            </p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

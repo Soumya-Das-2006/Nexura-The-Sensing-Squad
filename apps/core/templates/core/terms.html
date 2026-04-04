@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Terms of Service — Nexura{% endblock %}
+
+{% block content %}
+
+{% include "includes/_breadcrumb.html" with title="Terms of Service" subtitle="Please read these terms before using Nexura" %}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="nexura-stat-card p-5">
+                <p class="text-muted small mb-5"><strong>Last updated:</strong> March 2026 &nbsp;·&nbsp; Nexura, Parul University — Guidewire DEVTrails 2026</p>
+
+                <div class="nexura-alert warning mb-4">
+                    <span class="alert-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    <div><strong>Hackathon Disclosure:</strong> Nexura is a prototype built for the Guidewire DEVTrails 2026 hackathon. It is not a licensed insurance product. The Razorpay sandbox environment is used for all payment simulations.</div>
+                </div>
+
+                <h4 class="fw-bold mb-3">1. Acceptance of Terms</h4>
+                <p class="text-muted mb-4">By registering on Nexura, you agree to these Terms of Service and our Privacy Policy. If you do not agree, please do not use the platform.</p>
+
+                <h4 class="fw-bold mb-3">2. Eligibility</h4>
+                <p class="text-muted mb-4">You must be at least 18 years old and an active delivery worker for a supported platform (Zomato, Swiggy, Amazon Flex, Zepto, Blinkit, or Dunzo) operating in one of our 7 covered cities.</p>
+
+                <h4 class="fw-bold mb-3">3. The Nexura Policy</h4>
+                <ul class="text-muted mb-4">
+                    <li>Coverage is parametric and event-based — payouts are triggered by verifiable data crossing defined thresholds, not by income loss assessment.</li>
+                    <li>Coverage runs on a weekly cycle, paid in advance via UPI Autopay.</li>
+                    <li>A single disruption event qualifies for one payout per policy holder regardless of duration.</li>
+                    <li>Claims are generated automatically. You do not need to file them yourself.</li>
+                </ul>
+
+                <h4 class="fw-bold mb-3">4. Fraud and Abuse</h4>
+                <p class="text-muted mb-4">Claims flagged by our 6-layer fraud detection pipeline with a score above 0.70 will be automatically rejected. Intentional misrepresentation of zone location or platform activity will result in immediate policy cancellation and recovery of any paid amounts.</p>
+
+                <h4 class="fw-bold mb-3">5. Payments and Cancellation</h4>
+                <ul class="text-muted mb-4">
+                    <li>Weekly premiums are collected every Monday at 12:01 AM via Razorpay UPI Autopay.</li>
+                    <li>You may cancel your mandate at any time from your dashboard. Coverage continues until the end of the current week.</li>
+                    <li>Premiums are non-refundable once a week has started.</li>
+                </ul>
+
+                <h4 class="fw-bold mb-3">6. Limitation of Liability</h4>
+                <p class="text-muted mb-4">Nexura is a technology platform. Payouts are subject to trigger verification and fraud screening. We are not liable for losses arising from API failures, network outages, or events that do not meet threshold criteria.</p>
+
+                <h4 class="fw-bold mb-3">7. Governing Law</h4>
+                <p class="text-muted mb-4">These terms are governed by the laws of India. Any disputes will be subject to the jurisdiction of courts in Vadodara, Gujarat.</p>
+
+                <h4 class="fw-bold mb-3">8. Changes to Terms</h4>
+                <p class="text-muted mb-0">We may update these terms at any time. Continued use of the platform constitutes acceptance of revised terms. We will notify active policy holders via WhatsApp of material changes.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

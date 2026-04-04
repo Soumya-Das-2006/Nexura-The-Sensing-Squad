@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body_class %}nexura-dashboard{% endblock %}
+
+{# ── Strip the public topbar/navbar/footer from dashboard pages ── #}
+{% block topbar %}{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block whatsapp_float %}{% endblock %}
+
+{% block full_page %}
+
+<!-- ═══════════════════════════════════════════════════════════════
+     NEXURA DASHBOARD SHELL
+═══════════════════════════════════════════════════════════════ -->
+
+<!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+<nav class="nexura-sidebar" id="nexuraSidebar">
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+        <h4><i class="fas fa-shield-alt me-2"></i><span>Nexura</span></h4>
+        <p class="text-muted mb-0" style="font-size: 11px;">Income Protection Platform</p>
+    </div>
+
+    <!-- Worker mini-profile -->
+    {% if request.user.is_authenticated and request.user.is_worker %}
+    <div class="px-4 py-3 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center"
+                 style="width:40px;height:40px;flex-shrink:0;">
+                <i class="fas fa-user text-white"></i>
+            </div>
+            <div class="overflow-hidden">
+                <p class="text-white fw-semibold mb-0 text-truncate" style="font-size:13px;">
+                    {{ request.user.workerprofile.name|default:request.user.mobile }}
+                </p>
+                <p class="text-muted mb-0" style="font-size:11px;">
+                    {{ request.user.workerprofile.get_platform_display|default:"Gig Worker" }}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Nav links -->
+    <ul class="nav flex-column mt-2 px-0">
+
+        <li class="nav-item">
+            <a href="{% url 'workers:dashboard' %}"
+               class="nav-link {% block sidebar_dashboard %}{% endblock %}">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{% url 'policies:my_policy' %}"
+               class="nav-link {% block sidebar_policy %}{% endblock %}">
+                <i class="fas fa-shield-alt"></i>
+                <span>My Policy</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{% url 'claims:my_claims' %}"
+               class="nav-link {% block sidebar_claims %}{% endblock %}">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Claims</span>
+                {% comment %}
+                {% if pending_claims_count %}
+                <span class="badge bg-warning rounded-pill ms-auto">{{ pending_claims_count }}</span>
+                {% endif %}
+                {% endcomment %}
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{% url 'payouts:history' %}"
+               class="nav-link {% block sidebar_payouts %}{% endblock %}">
+                <i class="fas fa-rupee-sign"></i>
+                <span>Payouts</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{% url 'forecasting:zone_forecast' %}"
+               class="nav-link {% block sidebar_forecast %}{% endblock %}">
+                <i class="fas fa-cloud-sun-rain"></i>
+                <span>Risk Forecast</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{% url 'circles:my_circle' %}"
+               class="nav-link {% block sidebar_circles %}{% endblock %}">
+                <i class="fas fa-users"></i>
+                <span>Risk Circle</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{% url 'documents:income_dna' %}"
+               class="nav-link {% block sidebar_documents %}{% endblock %}">
+                <i class="fas fa-file-pdf"></i>
+                <span>IncomeDNA</span>
+            </a>
+        </li>
+
+        <li class="nav-item mt-2" style="border-top: 1px solid rgba(255,255,255,0.08);">
+            <a href="{% url 'workers:account' %}"
+               class="nav-link {% block sidebar_account %}{% endblock %}">
+                <i class="fas fa-user-cog"></i>
+                <span>Account Settings</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{% url 'core:contact' %}" class="nav-link">
+                <i class="fas fa-headset"></i>
+                <span>Support</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{% url 'accounts:logout' %}" class="nav-link text-danger">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </li>
+
+    </ul>
+
+    <!-- Sidebar footer: active policy badge -->
+    <div class="position-absolute bottom-0 start-0 end-0 p-4">
+        <div class="bg-primary bg-opacity-25 rounded p-3 text-center">
+            <p class="text-white-50 mb-1" style="font-size: 11px;">ACTIVE COVERAGE</p>
+            <p class="text-white fw-bold mb-0" style="font-size: 18px;">
+                ₹{% block sidebar_coverage %}—{% endblock %}
+            </p>
+            <p class="text-white-50 mb-0" style="font-size: 11px;">this week</p>
+        </div>
+    </div>
+
+</nav>
+<!-- ── Sidebar End ── -->
+
+<!-- ── Main Content ─────────────────────────────────────────────────── -->
+<div class="nexura-main-content">
+
+    <!-- Top bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3"
+         style="border-bottom: 1px solid #e2e8f0;">
+        <div class="d-flex align-items-center gap-3">
+            <!-- Mobile sidebar toggle -->
+            <button class="btn btn-light btn-sm d-lg-none" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div>
+                <h5 class="mb-0 fw-bold text-dark">{% block page_title %}Dashboard{% endblock %}</h5>
+                <p class="mb-0 text-muted" style="font-size: 13px;">{% block page_subtitle %}{% endblock %}</p>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <!-- City / Zone badge -->
+            {% if request.user.is_authenticated and request.user.is_worker %}
+            <span class="badge bg-light text-dark border px-3 py-2" style="font-size: 12px;">
+                <i class="fas fa-map-marker-alt text-primary me-1"></i>
+                {{ request.user.workerprofile.zone.city|default:"—" }}
+            </span>
+            {% endif %}
+            <!-- Notifications dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-light btn-sm position-relative"
+                        type="button"
+                        id="dashboardNotifDropdown"
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false"
+                        aria-label="Open notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          style="font-size: 9px;">
+                        {% block notif_count %}{% endblock %}
+                    </span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end p-0 shadow-sm border-0 overflow-hidden"
+                     aria-labelledby="dashboardNotifDropdown"
+                     style="min-width: 280px;">
+                    {% block notif_menu %}
+                    <div class="px-3 py-2 border-bottom bg-light">
+                        <p class="mb-0 fw-semibold" style="font-size: 13px;">Notifications</p>
+                    </div>
+                    <div class="px-3 py-3 text-muted" style="font-size: 13px;">
+                        No new notifications.
+                    </div>
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Django messages in dashboard -->
+    {% if messages %}
+    <div class="mb-4">
+        {% include "includes/_messages.html" %}
+    </div>
+    {% endif %}
+
+    <!-- ── Dashboard Page Content ── -->
+    {% block content %}{% endblock %}
+
+</div>
+<!-- ── Main Content End ── -->
+
+<!-- Sidebar overlay for mobile -->
+<div class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-none"
+     id="sidebarOverlay" style="z-index: 999;"></div>
+
+<!-- Back to top (dashboard) -->
+<a href="#" class="btn btn-primary btn-lg-square rounded-circle back-to-top">
+    <i class="fa fa-arrow-up"></i>
+</a>
+
+{% endblock full_page %}
+
+{% block extra_js %}
+<script>
+// Dashboard sidebar toggle (mobile)
+const sidebar  = document.getElementById('nexuraSidebar');
+const overlay  = document.getElementById('sidebarOverlay');
+const toggler  = document.getElementById('sidebarToggle');
+
+function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.remove('d-none');
+}
+function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.add('d-none');
+}
+
+if (toggler)  toggler.addEventListener('click', openSidebar);
+if (overlay)  overlay.addEventListener('click', closeSidebar);
+
+// Auto-dismiss messages after 5 s
+setTimeout(() => {
+    document.querySelectorAll('.nexura-alert').forEach(el => {
+        el.style.transition = 'opacity 0.5s';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 500);
+    });
+}, 5000);
+</script>
+{% endblock %}

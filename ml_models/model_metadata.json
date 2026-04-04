@@ -1,0 +1,20 @@
+{
+  "model_name": "GigShield Risk Scoring Model v1.0",
+  "algorithm": "XGBoost Binary Classifier + Isotonic Calibration",
+  "target_variable": "disruption_occurred",
+  "geography": "India",
+  "n_features": 44,
+  "n_training_samples": 7000,
+  "performance": {
+    "roc_auc": 0.6555,
+    "precision": 0.4905,
+    "recall": 0.2932,
+    "f1_score": 0.367,
+    "brier": 0.1947
+  },
+  "pricing": {
+    "base_premium_inr": 150,
+    "max_multiplier": 3.0,
+    "threshold": 0.4
+  }
+}

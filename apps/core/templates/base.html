@@ -1,0 +1,123 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Nexura — AI Income Protection for Gig Workers{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}Nexura provides AI-powered parametric income protection for India's gig delivery workers. Auto-claims, instant UPI payouts under 2 hours.{% endblock %}">
+    <meta name="keywords" content="gig worker insurance, income protection, parametric insurance, Zomato Swiggy delivery insurance, India">
+
+    <!-- Open Graph -->
+    <meta property="og:title"       content="{% block og_title %}Nexura — Income Protection for Gig Workers{% endblock %}">
+    <meta property="og:description" content="Disruption detected → auto claim → AI fraud check → UPI payout in under 2 hours.">
+    <meta property="og:type"        content="website">
+    <meta property="og:image"       content="{% static 'img/nexura-og.png' %}">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:slnt,wght@-10..0,100..900&display=swap" rel="stylesheet">
+
+    <!-- Icon Fonts -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Library Stylesheets -->
+    <link rel="stylesheet" href="{% static 'lib/animate/animate.min.css' %}"/>
+    <link href="{% static 'lib/lightbox/css/lightbox.min.css' %}" rel="stylesheet">
+    <link href="{% static 'lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
+
+    <!-- Bootstrap (Customised) -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Nexura Styles -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+
+    <!-- ── Spinner ──────────────────────────────────────────────────────── -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+
+    {% block full_page %}
+
+    {% block topbar %}
+        {% include "includes/_topbar.html" %}
+    {% endblock %}
+
+    {% block navbar %}
+        {% include "includes/_navbar.html" %}
+    {% endblock %}
+
+    <!-- ── Search Modal ──────────────────────────────────────────────────── -->
+    <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content rounded-0">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchModalLabel">Search Nexura</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex align-items-center bg-primary">
+                    <div class="input-group w-75 mx-auto d-flex">
+                        <input type="search" class="form-control p-3" placeholder="Search plans, claims, FAQs…" aria-describedby="search-icon-1">
+                        <span id="search-icon-1" class="btn bg-light border input-group-text p-3"><i class="fa fa-search"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Django Messages ───────────────────────────────────────────────── -->
+    {% if messages %}
+        <div class="messages-container container mt-3">
+            {% include "includes/_messages.html" %}
+        </div>
+    {% endif %}
+
+    <!-- ── Page Content ──────────────────────────────────────────────────── -->
+    {% block content %}{% endblock %}
+
+    {% block footer %}
+        {% include "includes/_footer.html" %}
+    {% endblock %}
+
+    <!-- ── Back to Top ───────────────────────────────────────────────────── -->
+    <a href="#" class="btn btn-primary btn-lg-square rounded-circle back-to-top">
+        <i class="fa fa-arrow-up"></i>
+    </a>
+
+    <!-- ── WhatsApp Float ────────────────────────────────────────────────── -->
+    {% block whatsapp_float %}
+    <a href="https://wa.me/{{ nexura.whatsapp_number }}" target="_blank" rel="noopener" class="whatsapp-float" title="Chat with us on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    {% endblock %}
+
+    {% endblock full_page %}
+
+    <!-- ── JavaScript Libraries ──────────────────────────────────────────── -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'lib/wow/wow.min.js' %}"></script>
+    <script src="{% static 'lib/easing/easing.min.js' %}"></script>
+    <script src="{% static 'lib/waypoints/waypoints.min.js' %}"></script>
+    <script src="{% static 'lib/counterup/counterup.min.js' %}"></script>
+    <script src="{% static 'lib/lightbox/js/lightbox.min.js' %}"></script>
+    <script src="{% static 'lib/owlcarousel/owl.carousel.min.js' %}"></script>
+
+    <!-- ── Main JS ───────────────────────────────────────────────────────── -->
+    <script src="{% static 'js/main.js' %}"></script>
+
+    <!-- ── Inline Page Scripts ───────────────────────────────────────────── -->
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

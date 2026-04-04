@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Verify OTP — Login | Nexura{% endblock %}
+{% block topbar %}{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block whatsapp_float %}{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center p-4"
+     style="background: linear-gradient(135deg, #015fc9 0%, #0369a1 100%);">
+    <div style="width: 100%; max-width: 420px;">
+
+        <a href="{% url 'core:home' %}" class="text-decoration-none d-block mb-4 text-center">
+            <h2 class="text-white fw-black d-flex align-items-center justify-content-center gap-2">
+                <i class="fas fa-shield-alt"></i> Nexura
+            </h2>
+        </a>
+
+        <div class="auth-surface-card rounded-4 shadow p-5 text-center">
+            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                 style="width:64px;height:64px;">
+                <i class="fas fa-key text-primary fa-2x"></i>
+            </div>
+            <h4 class="fw-bold mb-1">Enter OTP</h4>
+            <p class="text-muted mb-1 small">Sent to <strong>+91 {{ mobile }}</strong></p>
+            <a href="{% url 'accounts:login' %}" class="text-primary small">Wrong number?</a>
+
+            <div class="mt-3">{% include "includes/_messages.html" %}</div>
+
+            <form method="POST" action="{% url 'accounts:login_otp' %}" id="otpForm">
+                {% csrf_token %}
+                <div class="otp-inputs my-4" id="otpInputs">
+                    {% for i in "123456" %}
+                    <input type="text" name="d{{ i }}" maxlength="1"
+                           inputmode="numeric" pattern="[0-9]"
+                           class="otp-digit" autocomplete="one-time-code">
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="otp" id="otpHidden">
+
+                <button type="submit" class="btn btn-primary rounded-pill py-3 w-100 fw-semibold">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </button>
+            </form>
+
+            <div class="d-flex align-items-center justify-content-center gap-2 mt-3">
+                <span class="text-muted small">Didn't receive it?</span>
+                <form method="POST" action="{% url 'accounts:resend_otp' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-link p-0 text-primary small fw-semibold"
+                            id="resendBtn" disabled>
+                        Resend OTP
+                    </button>
+                </form>
+                <span class="text-muted small" id="countdown"></span>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const digits  = document.querySelectorAll('.otp-digit');
+const hidden  = document.getElementById('otpHidden');
+const form    = document.getElementById('otpForm');
+
+digits.forEach((input, idx) => {
+    input.addEventListener('input', e => {
+        const v = e.target.value.replace(/\D/g,'');
+        e.target.value = v ? v[v.length-1] : '';
+        if (v && idx < digits.length - 1) digits[idx+1].focus();
+        hidden.value = [...digits].map(d=>d.value).join('');
+    });
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !e.target.value && idx > 0) digits[idx-1].focus();
+    });
+    input.addEventListener('paste', e => {
+        e.preventDefault();
+        const t = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');
+        [...t.slice(0,6)].forEach((c,i) => { if(digits[i]) digits[i].value = c; });
+        hidden.value = [...digits].map(d=>d.value).join('');
+        if(t.length >= 6) form.submit();
+    });
+});
+if (digits[0]) digits[0].focus();
+
+let s = 30;
+const btn = document.getElementById('resendBtn');
+const cd  = document.getElementById('countdown');
+const t   = setInterval(() => {
+    s--;
+    cd.textContent = `(${s}s)`;
+    if (s <= 0) { clearInterval(t); btn.disabled = false; cd.textContent = ''; }
+}, 1000);
+</script>
+{% endblock %}

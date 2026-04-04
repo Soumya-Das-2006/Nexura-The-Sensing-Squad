@@ -1,0 +1,149 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block title %}My Claims — Nexura{% endblock %}
+{% block page_title %}My Claims{% endblock %}
+{% block page_subtitle %}All automatically filed claims for your zone.{% endblock %}
+{% block sidebar_claims %}active{% endblock %}
+
+{% block content %}
+
+<!-- ── Stats row ─────────────────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="nexura-stat-card text-center">
+            <p class="stat-value mb-1">{{ stats.total }}</p>
+            <p class="stat-label mb-0">Total Claims</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="nexura-stat-card text-center">
+            <p class="stat-value mb-1 text-success">{{ stats.approved }}</p>
+            <p class="stat-label mb-0">Approved</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="nexura-stat-card text-center">
+            <p class="stat-value mb-1 text-warning">{{ stats.pending }}</p>
+            <p class="stat-label mb-0">Pending</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="nexura-stat-card text-center">
+            <p class="stat-value mb-1" style="color:#8b5cf6;">{{ stats.on_hold }}</p>
+            <p class="stat-label mb-0">Under Review</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── Filter tabs ───────────────────────────────────────────────── -->
+<div class="nexura-stat-card mb-4">
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'claims:my_claims' %}"
+           class="btn rounded-pill py-1 px-3 small {% if not status_filter %}btn-primary{% else %}btn-light{% endif %}">
+            All
+        </a>
+        <a href="?status=approved"
+           class="btn rounded-pill py-1 px-3 small {% if status_filter == 'approved' %}btn-success{% else %}btn-light{% endif %}">
+            ✓ Approved
+        </a>
+        <a href="?status=pending"
+           class="btn rounded-pill py-1 px-3 small {% if status_filter == 'pending' %}btn-warning{% else %}btn-light{% endif %}">
+            ⏳ Pending
+        </a>
+        <a href="?status=on_hold"
+           class="btn rounded-pill py-1 px-3 small {% if status_filter == 'on_hold' %}btn-secondary{% else %}btn-light{% endif %}">
+            🔍 Under Review
+        </a>
+        <a href="?status=rejected"
+           class="btn rounded-pill py-1 px-3 small {% if status_filter == 'rejected' %}btn-danger{% else %}btn-light{% endif %}">
+            ✗ Rejected
+        </a>
+    </div>
+</div>
+
+<!-- ── Claims table ──────────────────────────────────────────────── -->
+<div class="nexura-stat-card">
+    {% if claims %}
+    <div class="table-responsive">
+        <table class="nexura-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Trigger</th>
+                    <th>Zone</th>
+                    <th>Amount</th>
+                    <th>Fraud Score</th>
+                    <th>Status</th>
+                    <th>Filed</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in claims %}
+                <tr>
+                    <td class="text-muted small">{{ claim.pk }}</td>
+
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="{{ claim.trigger_icon }} text-{{ claim.disruption_event.color }}"></i>
+                            <span class="small fw-semibold">
+                                {{ claim.disruption_event.get_trigger_type_display }}
+                            </span>
+                        </div>
+                    </td>
+
+                    <td class="text-muted small">
+                        {{ claim.disruption_event.zone.display_name }}
+                    </td>
+
+                    <td class="fw-bold {% if claim.status == 'approved' %}text-success{% endif %}">
+                        ₹{{ claim.payout_amount|floatformat:0 }}
+                    </td>
+
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="fraud-score-bar">
+                                <div class="fraud-score-fill {{ claim.fraud_color }}"
+                                     style="width: {{ claim.fraud_score|floatformat:0 }}0%"></div>
+                            </div>
+                            <span class="small text-muted">{{ claim.fraud_score|floatformat:2 }}</span>
+                        </div>
+                    </td>
+
+                    <td>
+                        <span class="status-badge
+                            {% if claim.status == 'approved' %}credited
+                            {% elif claim.status == 'pending' %}pending
+                            {% elif claim.status == 'rejected' %}rejected
+                            {% else %}on-hold{% endif %}">
+                            {{ claim.get_status_display }}
+                        </span>
+                    </td>
+
+                    <td class="text-muted small">{{ claim.created_at|date:"d M Y H:i" }}</td>
+
+                    <td>
+                        <a href="{% url 'claims:claim_detail' claim.pk %}"
+                           class="btn btn-light btn-sm rounded-pill px-3">
+                            Details
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-file-invoice-dollar fa-3x text-muted mb-3"></i>
+        <h5 class="fw-bold text-muted">No claims yet</h5>
+        <p class="text-muted">Claims are filed automatically when a disruption trigger fires in your zone.</p>
+        <a href="{% url 'forecasting:zone_forecast' %}" class="btn btn-primary rounded-pill px-4">
+            View Risk Forecast
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

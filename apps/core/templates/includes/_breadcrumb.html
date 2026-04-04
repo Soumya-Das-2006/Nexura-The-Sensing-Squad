@@ -1,0 +1,31 @@
+{% comment %}
+Usage:
+  {% include "includes/_breadcrumb.html" with title="Plans" subtitle="Choose your shield" crumbs="Home,Plans" %}
+  crumbs is a comma-separated list; the last item is the active page.
+{% endcomment %}
+<div class="container-fluid bg-breadcrumb py-5 mb-5">
+    <div class="container py-3 text-center text-white">
+        <h1 class="display-4 fw-bold mb-2">{{ title }}</h1>
+        {% if subtitle %}
+            <p class="mb-3 fs-5 text-white-50">{{ subtitle }}</p>
+        {% endif %}
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'core:home' %}" class="text-white">Home</a>
+                </li>
+                {% if breadcrumb_items %}
+                    {% for crumb in breadcrumb_items %}
+                        {% if not forloop.last %}
+                            <li class="breadcrumb-item text-white-50">{{ crumb.label }}</li>
+                        {% else %}
+                            <li class="breadcrumb-item active text-white" aria-current="page">{{ crumb.label }}</li>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <li class="breadcrumb-item active text-white" aria-current="page">{{ title }}</li>
+                {% endif %}
+            </ol>
+        </nav>
+    </div>
+</div>

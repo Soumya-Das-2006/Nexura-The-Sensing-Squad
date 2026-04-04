@@ -1,0 +1,233 @@
+{% load static nexura_tags %}
+<!-- ── Footer ── -->
+<div class="container-fluid footer py-5 wow fadeIn" data-wow-delay="0.2s">
+    <div class="container py-5">
+        <div class="row g-5">
+
+            <!-- Left 3 columns -->
+            <div class="col-xl-9">
+                <div class="mb-5">
+                    <div class="row g-4">
+
+                        <!-- Brand + Social -->
+                        <div class="col-md-6 col-lg-6 col-xl-5">
+                            <div class="footer-item">
+                                <a href="{% url 'core:home' %}" class="p-0">
+                                    <h3 class="text-white d-flex align-items-center gap-2">
+                                        <i class="fas fa-shield-alt text-primary"></i>
+                                        Nexura
+                                    </h3>
+                                </a>
+                                <p class="text-white mb-3">
+                                    AI-powered parametric income protection for India's 11 million+ gig delivery workers.
+                                    Disruption detected → auto claim → UPI payout in under 2 hours.
+                                </p>
+                                <div class="d-flex gap-2 mb-3">
+                                    <span class="badge bg-primary rounded-pill px-3 py-2">
+                                        <i class="fas fa-bolt me-1"></i> &lt; 2hr Payout
+                                    </span>
+                                    <span class="badge bg-success rounded-pill px-3 py-2">
+                                        <i class="fas fa-check me-1"></i> Zero Claims Filing
+                                    </span>
+                                </div>
+                                <div class="footer-btn d-flex">
+                                    <a class="btn btn-md-square rounded-circle me-3" href="#" aria-label="Facebook">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </a>
+                                    <a class="btn btn-md-square rounded-circle me-3" href="#" aria-label="Twitter">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                                    <a class="btn btn-md-square rounded-circle me-3" href="#" aria-label="Instagram">
+                                        <i class="fab fa-instagram"></i>
+                                    </a>
+                                    <a class="btn btn-md-square rounded-circle me-0" href="#" aria-label="LinkedIn">
+                                        <i class="fab fa-linkedin-in"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Links -->
+                        <div class="col-md-6 col-lg-6 col-xl-3">
+                            <div class="footer-item">
+                                <h4 class="text-white mb-4">Quick Links</h4>
+                                <a href="{% url 'core:home' %}">
+                                    <i class="fas fa-angle-right me-2"></i> Home
+                                </a>
+                                <a href="{% url 'core:about' %}">
+                                    <i class="fas fa-angle-right me-2"></i> About Nexura
+                                </a>
+                                <a href="{% url 'policies:plans' %}">
+                                    <i class="fas fa-angle-right me-2"></i> View Plans
+                                </a>
+                                <a href="{% url 'core:how_it_works' %}">
+                                    <i class="fas fa-angle-right me-2"></i> How It Works
+                                </a>
+                                <a href="{% url 'core:faq' %}">
+                                    <i class="fas fa-angle-right me-2"></i> FAQs
+                                </a>
+                                <a href="{% url 'core:contact' %}">
+                                    <i class="fas fa-angle-right me-2"></i> Contact Us
+                                </a>
+                                {% if not user.is_authenticated %}
+                                <a href="{% url 'accounts:register' %}">
+                                    <i class="fas fa-angle-right me-2"></i> Get Protected
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Covered Cities -->
+                        <div class="col-md-6 col-lg-6 col-xl-4">
+                            <div class="footer-item">
+                                <h4 class="text-white mb-4">
+                                    <i class="fas fa-city me-2"></i>Covered Cities
+                                </h4>
+                                <div class="row g-2">
+                                    {% for city in nexura.covered_cities %}
+                                    <div class="col-6">
+                                        <span class="text-muted small d-flex align-items-center gap-1">
+                                            <i class="fas fa-map-marker-alt text-primary" style="font-size: 10px;"></i>
+                                            {{ city }}
+                                        </span>
+                                    </div>
+                                    {% empty %}
+                                    {% for city in "Mumbai,Delhi,Bangalore,Chennai,Hyderabad,Kolkata,Pune"|split:"," %}
+                                    <div class="col-6">
+                                        <span class="text-muted small d-flex align-items-center gap-1">
+                                            <i class="fas fa-map-marker-alt text-primary" style="font-size: 10px;"></i>
+                                            {{ city }}
+                                        </span>
+                                    </div>
+                                    {% endfor %}
+                                    {% endfor %}
+                                </div>
+                                <a href="{% url 'core:cities' %}" class="text-primary small mt-3 d-block">
+                                    <i class="fas fa-plus-circle me-1"></i>View all zones
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Contact row -->
+                <div class="pt-5" style="border-top: 1px solid rgba(255,255,255,0.08);">
+                    <div class="row g-4">
+                        <div class="col-lg-6 col-xl-4">
+                            <div class="d-flex">
+                                <div class="btn-xl-square bg-primary text-white rounded p-4 me-4">
+                                    <i class="fas fa-map-marker-alt fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-white">Headquarters</h5>
+                                    <p class="mb-0 text-muted small">Parul University, Vadodara, Gujarat</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-xl-4">
+                            <div class="d-flex">
+                                <div class="btn-xl-square bg-primary text-white rounded p-4 me-4">
+                                    <i class="fas fa-envelope fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-white">Email Us</h5>
+                                    <a href="mailto:support@nexaura.in" class="text-muted small">
+                                        support@nexaura.in
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-xl-4">
+                            <div class="d-flex">
+                                <div class="btn-xl-square bg-primary text-white rounded p-4 me-4">
+                                    <i class="fab fa-whatsapp fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-white">WhatsApp</h5>
+                                    <a href="https://wa.me/918000000000" class="text-muted small">
+                                        +91 80000 00000
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.col-xl-9 -->
+
+            <!-- Right: Newsletter + Plans -->
+            <div class="col-xl-3">
+                <div class="footer-item">
+                    <h4 class="text-white mb-4">Our Plans</h4>
+                    <div class="d-flex flex-column gap-3 mb-4">
+
+                        <div class="d-flex align-items-center justify-content-between bg-white bg-opacity-10 rounded p-3">
+                            <div>
+                                <p class="text-white fw-semibold mb-0 small">Basic Shield</p>
+                                <p class="text-muted mb-0" style="font-size: 11px;">₹500 coverage/week</p>
+                            </div>
+                            <span class="text-white fw-bold">₹29<small class="text-muted">/wk</small></span>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between bg-primary rounded p-3">
+                            <div>
+                                <p class="text-white fw-semibold mb-0 small">Standard Shield</p>
+                                <p class="text-white-50 mb-0" style="font-size: 11px;">₹1,000 coverage/week</p>
+                            </div>
+                            <span class="text-white fw-bold">₹49<small class="text-white-50">/wk</small></span>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between bg-white bg-opacity-10 rounded p-3">
+                            <div>
+                                <p class="text-white fw-semibold mb-0 small">Premium Shield</p>
+                                <p class="text-muted mb-0" style="font-size: 11px;">₹2,000 coverage/week</p>
+                            </div>
+                            <span class="text-white fw-bold">₹79<small class="text-muted">/wk</small></span>
+                        </div>
+
+                    </div>
+
+                    <a href="{% url 'policies:plans' %}" class="btn btn-primary rounded-pill py-2 px-4 w-100 mb-4">
+                        Get Protected Today
+                    </a>
+
+                    <!-- Supported platforms -->
+                    <h6 class="text-white mb-2 small">Supported Platforms</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for platform in "Zomato,Swiggy,Amazon,Zepto,Blinkit,Dunzo"|split:"," %}
+                        <span class="badge bg-white bg-opacity-10 text-white" style="font-size: 11px;">{{ platform }}</span>
+                        {% endfor %}
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- ── Footer End ── -->
+
+<!-- ── Copyright ── -->
+<div class="container-fluid copyright py-4">
+    <div class="container">
+        <div class="row g-4 align-items-center">
+            <div class="col-md-6 text-center text-md-end">
+                <span class="text-body">
+                    <a href="{% url 'core:home' %}" class="border-bottom text-white">
+                        <i class="fas fa-copyright text-light me-2"></i>Nexura
+                    </a>, All rights reserved. {{ nexura.current_year }}
+                </span>
+            </div>
+            <div class="col-md-6 text-center text-md-start text-body">
+                <span class="text-muted small">
+                    Built for Guidewire DEVTrails 2026 &nbsp;·&nbsp;
+                    <a href="{% url 'core:privacy' %}" class="border-bottom text-white">Privacy Policy</a>
+                    &nbsp;·&nbsp;
+                    <a href="{% url 'core:terms' %}" class="border-bottom text-white">Terms</a>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ── Copyright End ── -->

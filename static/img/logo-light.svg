@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
+  <rect x="4" y="8" width="44" height="44" rx="12" fill="rgba(255,255,255,.15)"/>
+  <path d="M16 42 L16 20 L24 20 L30 35 L36 20 L44 20 L44 42 L38 42 L38 30 L33 42 L27 42 L22 30 L22 42 Z" fill="white"/>
+  <text x="58" y="38" font-family="Inter,DM Sans,sans-serif" font-weight="900" font-size="26" fill="white">nexura</text>
+  <text x="58" y="52" font-family="Inter,sans-serif" font-weight="500" font-size="10" fill="rgba(255,255,255,.7)">income protection</text>
+</svg>

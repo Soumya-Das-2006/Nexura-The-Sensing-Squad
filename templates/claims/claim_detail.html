@@ -1,0 +1,238 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Claim #{{ claim.pk }} — Nexura{% endblock %}
+{% block page_title %}Claim #{{ claim.pk }}{% endblock %}
+{% block page_subtitle %}{{ claim.disruption_event.get_trigger_type_display }} — {{ claim.disruption_event.zone.display_name }}{% endblock %}
+{% block sidebar_claims %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <!-- Left: Claim summary -->
+    <div class="col-lg-7">
+
+        <!-- Status card -->
+        <div class="nexura-stat-card mb-4">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="stat-icon bg-{{ claim.disruption_event.color }}-soft">
+                            <i class="{{ claim.trigger_icon }} text-{{ claim.disruption_event.color }}"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">
+                                {{ claim.disruption_event.get_trigger_type_display }}
+                            </h5>
+                            <p class="text-muted mb-0 small">
+                                {{ claim.disruption_event.zone.display_name }}
+                                · {{ claim.disruption_event.started_at|date:"d M Y H:i" }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <span class="status-badge
+                    {% if claim.status == 'approved' %}credited
+                    {% elif claim.status == 'pending' %}pending
+                    {% elif claim.status == 'rejected' %}rejected
+                    {% else %}on-hold{% endif %} fs-6">
+                    {{ claim.get_status_display }}
+                </span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-6">
+                    <p class="text-muted small mb-1">Claim Amount</p>
+                    <p class="fw-bold fs-4 {% if claim.status == 'approved' %}text-success{% endif %}">
+                        ₹{{ claim.payout_amount|floatformat:0 }}
+                    </p>
+                </div>
+                <div class="col-6">
+                    <p class="text-muted small mb-1">Plan</p>
+                    <p class="fw-semibold">{{ claim.policy.plan_tier.name }}</p>
+                </div>
+                <div class="col-6">
+                    <p class="text-muted small mb-1">Filed</p>
+                    <p class="fw-semibold small">{{ claim.created_at|date:"d M Y H:i" }}</p>
+                </div>
+                <div class="col-6">
+                    <p class="text-muted small mb-1">Last Updated</p>
+                    <p class="fw-semibold small">{{ claim.updated_at|date:"d M Y H:i" }}</p>
+                </div>
+                {% if claim.status == 'rejected' and claim.rejection_reason %}
+                <div class="col-12">
+                    <div class="nexura-alert danger mt-2">
+                        <span class="alert-icon"><i class="fas fa-times-circle"></i></span>
+                        <div>
+                            <strong>Rejection Reason:</strong> {{ claim.rejection_reason }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Disruption event details -->
+        <div class="nexura-stat-card mb-4">
+            <h6 class="fw-bold mb-3 text-uppercase small text-muted">
+                <i class="fas fa-bolt text-primary me-2"></i>Disruption Details
+            </h6>
+            <div class="row g-3">
+                <div class="col-6">
+                    <p class="text-muted small mb-1">Severity</p>
+                    <p class="fw-semibold">
+                        {{ claim.disruption_event.severity_value|floatformat:1 }}
+                        {% with t=claim.disruption_event.trigger_type %}
+                            {% if t == 'heavy_rain' %}mm/hr
+                            {% elif t == 'extreme_heat' %}°C
+                            {% elif t == 'severe_aqi' %}AQI
+                            {% elif t == 'platform_down' %}minutes
+                            {% endif %}
+                        {% endwith %}
+                    </p>
+                </div>
+                <div class="col-6">
+                    <p class="text-muted small mb-1">Threshold</p>
+                    <p class="fw-semibold">{{ claim.disruption_event.threshold_value|floatformat:0 }}</p>
+                </div>
+                <div class="col-6">
+                    <p class="text-muted small mb-1">Full Trigger</p>
+                    <span class="status-badge {% if claim.disruption_event.is_full_trigger %}active{% else %}pending{% endif %}">
+                        {% if claim.disruption_event.is_full_trigger %}Yes — 100% payout{% else %}Partial — 50% payout{% endif %}
+                    </span>
+                </div>
+                <div class="col-6">
+                    <p class="text-muted small mb-1">Data Source</p>
+                    <p class="fw-semibold small">{{ claim.disruption_event.source_api|default:"—" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payout info -->
+        {% if payout %}
+        <div class="nexura-stat-card">
+            <h6 class="fw-bold mb-3 text-uppercase small text-muted">
+                <i class="fas fa-rupee-sign text-success me-2"></i>Payout Details
+            </h6>
+            <div class="row g-3">
+                <div class="col-6">
+                    <p class="text-muted small mb-1">Amount</p>
+                    <p class="fw-bold text-success fs-5">₹{{ payout.amount|floatformat:0 }}</p>
+                </div>
+                <div class="col-6">
+                    <p class="text-muted small mb-1">Status</p>
+                    <span class="status-badge {% if payout.status == 'credited' %}credited{% else %}pending{% endif %}">
+                        {{ payout.get_status_display }}
+                    </span>
+                </div>
+                {% if payout.utr_number %}
+                <div class="col-12">
+                    <p class="text-muted small mb-1">UTR Reference</p>
+                    <span class="utr-ref">{{ payout.utr_number }}</span>
+                </div>
+                {% endif %}
+                {% if payout.credited_at %}
+                <div class="col-12">
+                    <p class="text-muted small mb-1">Credited At</p>
+                    <p class="fw-semibold small">{{ payout.credited_at|date:"d M Y H:i" }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Right: Fraud pipeline breakdown -->
+    <div class="col-lg-5">
+        <div class="nexura-stat-card mb-4">
+            <h6 class="fw-bold mb-3 text-uppercase small text-muted">
+                <i class="fas fa-robot text-primary me-2"></i>AI Fraud Analysis
+            </h6>
+
+            <!-- Score meter -->
+            <div class="text-center mb-4 p-4 rounded-3"
+                 style="background: {% if claim.fraud_score < 0.5 %}#dcfce7{% elif claim.fraud_score < 0.7 %}#fef3c7{% else %}#fee2e2{% endif %};">
+                <p class="text-muted small mb-1">FRAUD SCORE</p>
+                <p class="display-5 fw-black mb-1
+                   {% if claim.fraud_score < 0.5 %}text-success
+                   {% elif claim.fraud_score < 0.7 %}text-warning
+                   {% else %}text-danger{% endif %}">
+                    {{ claim.fraud_score|floatformat:3 }}
+                </p>
+                <span class="badge
+                    {% if claim.fraud_score < 0.5 %}bg-success
+                    {% elif claim.fraud_score < 0.7 %}bg-warning text-dark
+                    {% else %}bg-danger{% endif %}
+                    rounded-pill px-3">
+                    {{ claim.fraud_tier }} Risk
+                </span>
+                <p class="text-muted small mt-2 mb-0">
+                    {% if claim.fraud_score < 0.5 %}
+                        Auto-approved — score below 0.50 threshold
+                    {% elif claim.fraud_score < 0.7 %}
+                        Held for manual review — score in 0.50–0.70 band
+                    {% else %}
+                        Auto-rejected — score above 0.70 threshold
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Pipeline layers -->
+            <div class="d-flex flex-column gap-3">
+                {% for layer_num in "123456" %}
+                {% with layer_int=forloop.counter %}
+
+                {% comment %}Find flags for this layer{% endcomment %}
+                {% for flag in claim.fraud_flags %}
+                {% if flag.layer == layer_int %}
+                <div class="d-flex gap-3 p-3 rounded-3"
+                     style="background: {% if flag.score_contribution > 0.3 %}#fee2e2{% elif flag.score_contribution > 0.1 %}#fef3c7{% else %}#f0fdf4{% endif %};">
+                    <div class="flex-shrink-0 rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                         style="width:32px;height:32px;min-width:32px;
+                                background:{% if flag.score_contribution > 0.3 %}#fca5a5{% elif flag.score_contribution > 0.1 %}#fde68a{% else %}#bbf7d0{% endif %};
+                                font-size:13px;">
+                        {{ layer_int }}
+                    </div>
+                    <div>
+                        <p class="fw-semibold mb-1 small">
+                            Layer {{ layer_int }} —
+                            {% with f=flag.flag %}
+                            {% if f == 'partial_trigger' %}Parametric Gate (Partial)
+                            {% elif f == 'no_event' %}Parametric Gate (Failed)
+                            {% elif f == 'duplicate' %}Duplicate Prevention
+                            {% elif f == 'zone_mismatch' %}GPS Zone Validation
+                            {% elif f == 'zone_check_skipped' %}GPS Zone (Skipped)
+                            {% elif f == 'ml_score' %}ML Score (ISO + XGB)
+                            {% elif f == 'heuristic_score' %}Heuristic Score
+                            {% elif f == 'no_kyc' %}KYC Check
+                            {% elif f == 'high_velocity' %}Claim Velocity
+                            {% elif f == 'score_hold' %}Score Routing
+                            {% else %}{{ f }}{% endif %}
+                            {% endwith %}
+                        </p>
+                        <p class="text-muted mb-0" style="font-size:12px;">{{ flag.detail }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+
+                {% endwith %}
+                {% endfor %}
+
+                {% if not claim.fraud_flags %}
+                <div class="nexura-alert info">
+                    <span class="alert-icon"><i class="fas fa-info-circle"></i></span>
+                    <div>Pipeline audit log not available for this claim.</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <a href="{% url 'claims:my_claims' %}" class="btn btn-light rounded-pill w-100 py-2">
+            ← Back to All Claims
+        </a>
+    </div>
+
+</div>
+{% endblock %}

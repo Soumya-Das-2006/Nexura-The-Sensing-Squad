@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}FAQs — Nexura Income Protection{% endblock %}
+{% block nav_how %}{% endblock %}
+
+{% block content %}
+
+{% include "includes/_breadcrumb.html" with title="Frequently Asked Questions" subtitle="Everything you need to know about Nexura" %}
+
+<div class="container-fluid faq-section py-5">
+    <div class="container py-5">
+        {% for category, faq_list in grouped_faqs.items %}
+        <div class="mb-5 wow fadeInUp">
+            <h4 class="text-primary fw-bold mb-4">
+                <i class="fas fa-folder-open me-2"></i>{{ category }}
+            </h4>
+            <div class="accordion" id="faq_{{ forloop.counter }}">
+                {% for item in faq_list %}
+                <div class="accordion-item border-0 mb-2 rounded overflow-hidden shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                                type="button" data-bs-toggle="collapse"
+                                data-bs-target="#q{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                            {{ item.question }}
+                        </button>
+                    </h2>
+                    <div id="q{{ forloop.parentloop.counter }}_{{ forloop.counter }}"
+                         class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                         data-bs-parent="#faq_{{ forloop.parentloop.counter }}">
+                        <div class="accordion-body text-muted">
+                            {{ item.answer }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center">No FAQs yet. Check back soon.</p>
+        {% endfor %}
+
+        <!-- Still have questions -->
+        <div class="text-center mt-5 p-5 bg-light rounded-4">
+            <h4 class="fw-bold mb-3">Still have questions?</h4>
+            <p class="text-muted mb-4">Our support team is available 9 AM – 9 PM IST, 7 days a week.</p>
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <a href="{% url 'core:contact' %}" class="btn btn-primary rounded-pill py-3 px-5">
+                    <i class="fas fa-envelope me-2"></i>Contact Us
+                </a>
+                <a href="https://wa.me/{{ nexura.whatsapp_number }}" target="_blank"
+                   class="btn btn-success rounded-pill py-3 px-5">
+                    <i class="fab fa-whatsapp me-2"></i>WhatsApp Us
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

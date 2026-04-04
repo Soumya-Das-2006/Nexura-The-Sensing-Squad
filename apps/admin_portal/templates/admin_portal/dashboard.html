@@ -1,0 +1,133 @@
+{% extends "base_admin.html" %}
+{% load static %}
+{% block title %}Admin Dashboard — Nexura{% endblock %}
+{% block page_title %}Operations Overview{% endblock %}
+{% block page_subtitle %}Live platform metrics{% endblock %}
+{% block admin_nav_home %}active{% endblock %}
+
+{% block content %}
+
+<!-- ── KPI Cards ─────────────────────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="nexura-stat-card">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="stat-icon bg-primary-soft"><i class="fas fa-users"></i></div>
+                <div>
+                    <p class="stat-label mb-0">Active Workers</p>
+                    <p class="stat-value mb-0">{{ total_workers }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="nexura-stat-card">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="stat-icon bg-success-soft"><i class="fas fa-shield-alt"></i></div>
+                <div>
+                    <p class="stat-label mb-0">Active Policies</p>
+                    <p class="stat-value mb-0">{{ active_policies }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="nexura-stat-card">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="stat-icon bg-warning-soft"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div>
+                    <p class="stat-label mb-0">Pending Claims</p>
+                    <p class="stat-value mb-0 {% if pending_claims > 0 %}text-warning{% endif %}">{{ pending_claims }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="nexura-stat-card">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="stat-icon bg-success-soft"><i class="fas fa-rupee-sign"></i></div>
+                <div>
+                    <p class="stat-label mb-0">Total Paid Out</p>
+                    <p class="stat-value mb-0 text-success">₹{{ total_paid_out|floatformat:0 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── This Week ─────────────────────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="nexura-stat-card text-center">
+            <p class="stat-value text-primary mb-1">{{ week_triggers }}</p>
+            <p class="stat-label mb-0">Triggers This Week</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="nexura-stat-card text-center">
+            <p class="stat-value mb-1">{{ week_claims }}</p>
+            <p class="stat-label mb-0">Claims This Week</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="nexura-stat-card text-center">
+            <p class="stat-value text-success mb-1">₹{{ week_payouts|floatformat:0 }}</p>
+            <p class="stat-label mb-0">Paid Out This Week</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── Recent Events + Claims ────────────────────────────────────────── -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="nexura-stat-card">
+            <div class="d-flex justify-content-between mb-3">
+                <h6 class="fw-bold mb-0"><i class="fas fa-bolt text-primary me-2"></i>Recent Triggers</h6>
+                <a href="{% url 'admin_portal:triggers' %}" class="text-primary small">View All →</a>
+            </div>
+            {% for event in recent_events %}
+            <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                <i class="{{ event.icon }} text-{{ event.color }}" style="width:18px;"></i>
+                <div class="flex-fill">
+                    <p class="fw-semibold mb-0 small">{{ event.get_trigger_type_display }}</p>
+                    <p class="text-muted mb-0" style="font-size:11px;">{{ event.zone }}</p>
+                </div>
+                <span class="text-muted" style="font-size:11px;">{{ event.started_at|date:"d M H:i" }}</span>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center small py-3">No recent triggers</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="nexura-stat-card">
+            <div class="d-flex justify-content-between mb-3">
+                <h6 class="fw-bold mb-0"><i class="fas fa-file-invoice-dollar text-primary me-2"></i>Recent Claims</h6>
+                <a href="{% url 'admin_portal:claims' %}" class="text-primary small">View All →</a>
+            </div>
+            {% for claim in recent_claims %}
+            <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                <div class="flex-fill">
+                    <p class="fw-semibold mb-0 small">{{ claim.worker.mobile }}</p>
+                    <p class="text-muted mb-0" style="font-size:11px;">
+                        {{ claim.disruption_event.get_trigger_type_display|default:"—" }} ·
+                        ₹{{ claim.payout_amount|floatformat:0 }}
+                    </p>
+                </div>
+                <span class="status-badge
+                    {% if claim.status == 'approved' %}credited
+                    {% elif claim.status == 'on_hold' %}on-hold
+                    {% elif claim.status == 'rejected' %}rejected
+                    {% else %}pending{% endif %}" style="font-size:10px;">
+                    {{ claim.get_status_display }}
+                </span>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center small py-3">No recent claims</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

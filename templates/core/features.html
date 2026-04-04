@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load nexura_tags %}
+{% load static nexura_tags %}
+
+{% block title %}Features — Nexura AI Parametric Insurance{% endblock %}
+
+{% block content %}
+
+{% include "includes/_breadcrumb.html" with title="Platform Features" subtitle="Everything that makes Nexura different from traditional insurance" %}
+
+<!-- CORE FEATURES GRID -->
+<div class="container-fluid feature bg-light py-5">
+    <div class="container py-4">
+        <div class="text-center mx-auto mb-5 wow fadeInUp" style="max-width:700px;">
+            <h4 class="text-primary">What Makes Nexura Different</h4>
+            <h2 class="display-5 fw-bold mb-3">Built for Gig Workers, Not Paper Pushers</h2>
+            <p class="text-muted">Traditional insurance requires forms, agents, and weeks of waiting. Nexura is fully automated — from trigger to payout.</p>
+        </div>
+        <div class="row g-4">
+
+            <div class="col-md-6 col-xl-4 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4"><i class="fas fa-robot fa-3x"></i></div>
+                    <h5 class="mb-3">Zero-Touch Claims</h5>
+                    <p class="mb-0 text-muted">No forms. No calls. Our AI automatically creates your claim the moment a disruption trigger fires in your zone.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4 wow fadeInUp" data-wow-delay="0.2s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4"><i class="fas fa-bolt fa-3x"></i></div>
+                    <h5 class="mb-3">Sub-2 Hour UPI Payout</h5>
+                    <p class="mb-0 text-muted">Razorpay Payouts API transfers money directly to your linked UPI ID within 2 hours of a trigger firing.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4"><i class="fas fa-cloud-sun-rain fa-3x"></i></div>
+                    <h5 class="mb-3">6 Trigger Types, 24/7</h5>
+                    <p class="mb-0 text-muted">Heavy rain · extreme heat · severe AQI · flash flood · curfew · platform downtime — monitored every 5–30 minutes.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4"><i class="fas fa-brain fa-3x"></i></div>
+                    <h5 class="mb-3">XGBoost Risk Pricing</h5>
+                    <p class="mb-0 text-muted">A 44-feature XGBoost model recalculates your personalised premium every Sunday based on your zone and claim history.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4 wow fadeInUp" data-wow-delay="0.2s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4"><i class="fas fa-user-secret fa-3x"></i></div>
+                    <h5 class="mb-3">6-Layer Fraud Detection</h5>
+                    <p class="mb-0 text-muted">Parametric gate → duplicate check → GPS zone validation → Isolation Forest ML score → routing → nightly rescan.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4"><i class="fas fa-chart-line fa-3x"></i></div>
+                    <h5 class="mb-3">Prophet Forecasting</h5>
+                    <p class="mb-0 text-muted">28 pre-trained Prophet models predict next week's AQI, rainfall, temperature, and disruption probability across 7 cities.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4"><i class="fas fa-users fa-3x"></i></div>
+                    <h5 class="mb-3">Risk Circles</h5>
+                    <p class="mb-0 text-muted">Pool premiums with other gig workers in your zone. Shared risk pool means lower effective cost and higher coverage.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4 wow fadeInUp" data-wow-delay="0.2s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4"><i class="fas fa-file-pdf fa-3x"></i></div>
+                    <h5 class="mb-3">IncomeDNA Report</h5>
+                    <p class="mb-0 text-muted">Digitally-signed PDF of your earnings, claims, and payouts. RSA-signed and S3-hosted. Useful for bank loans and visa applications.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="feature-item p-4 pt-0 h-100">
+                    <div class="feature-icon p-4 mb-4"><i class="fab fa-whatsapp fa-3x"></i></div>
+                    <h5 class="mb-3">WhatsApp Notifications</h5>
+                    <p class="mb-0 text-muted">Every claim, payout, and weekly forecast alert sent directly to your WhatsApp in your preferred language.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- CELERY SCHEDULE VISUAL -->
+<div class="container-fluid py-5">
+    <div class="container py-4">
+        <div class="text-center mx-auto mb-5 wow fadeInUp" style="max-width:700px;">
+            <h4 class="text-primary">Under the Hood</h4>
+            <h2 class="display-5 fw-bold mb-3">9 Automated Tasks Running 24/7</h2>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-8 wow fadeInUp">
+                <div class="nexura-stat-card p-4">
+                    <h6 class="fw-bold mb-4 text-dark"><i class="fas fa-clock text-primary me-2"></i>Celery Beat Schedule</h6>
+                    <div class="d-flex flex-column gap-0">
+                        {% with tasks="Every 10 min,fas fa-server,Platform uptime monitoring|Every 15 min,fas fa-cloud-rain,Weather polling for all zones|Every 30 min,fas fa-smog,AQI polling for all zones|Every 5 min,fas fa-file-invoice-dollar,Process pending claims + payouts|Daily 2 AM,fas fa-user-secret,Batch fraud re-scan (Isolation Forest)|Monday 12:01 AM,fas fa-rupee-sign,Collect weekly premiums (UPI Autopay)|Sunday 8:00 PM,fas fa-brain,Recalculate all premiums (XGBoost)|Sunday 8:30 PM,fas fa-chart-line,Generate zone forecasts (Prophet)|Sunday 9:00 PM,fab fa-whatsapp,Send forecast alerts (WhatsApp + Email)" %}
+                        {% for task in tasks|split:"|" %}
+                        {% with parts=task|split:"," %}
+                        <div class="d-flex align-items-center gap-3 py-3" style="border-bottom:1px solid #f1f5f9;">
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill" style="min-width:120px;font-size:11px;">{{ parts|index:0 }}</span>
+                            <i class="{{ parts|index:1 }} text-primary" style="width:20px;"></i>
+                            <span class="text-dark" style="font-size:13px;">{{ parts|index:2 }}</span>
+                        </div>
+                        {% endwith %}
+                        {% endfor %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA -->
+<div class="container-fluid bg-primary py-5 text-center">
+    <div class="container py-3 wow fadeInUp">
+        <h2 class="display-5 text-white fw-bold mb-3">Experience All of This for ₹29/Week</h2>
+        <p class="text-white-75 fs-5 mb-4">No paperwork. No agents. Cancel anytime.</p>
+        <a href="{% url 'accounts:register' %}" class="btn btn-light rounded-pill py-3 px-5 fw-semibold fs-5">
+            <i class="fas fa-shield-alt me-2"></i>Get Protected Today
+        </a>
+    </div>
+</div>
+
+{% endblock %}
