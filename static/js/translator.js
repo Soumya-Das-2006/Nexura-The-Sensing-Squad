@@ -365,6 +365,8 @@
   function getDefaultLanguage() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved && LANG_MAP.has(saved)) return saved;
+    const preferred = (document.body?.dataset?.defaultLanguage || "").toLowerCase();
+    if (preferred && LANG_MAP.has(preferred)) return preferred;
     const browser = (navigator.language || "en").slice(0, 2).toLowerCase();
     return LANG_MAP.has(browser) ? browser : "en";
   }

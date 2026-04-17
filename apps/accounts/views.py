@@ -163,6 +163,15 @@ def register_step3_profile(request):
         ('auto',    'Auto Rickshaw'),
         ('car',     'Car'),
     ]
+    LANGUAGE_CHOICES = [
+        ('en', 'English'),
+        ('hi', 'हिंदी (Hindi)'),
+        ('mr', 'मराठी (Marathi)'),
+        ('bn', 'বাংলা (Bengali)'),
+        ('ta', 'தமிழ் (Tamil)'),
+        ('te', 'తెలుగు (Telugu)'),
+    ]
+    allowed_language_codes = {code for code, _ in LANGUAGE_CHOICES}
 
     if request.method == 'POST':
         name     = request.POST.get('name', '').strip()
@@ -170,7 +179,9 @@ def register_step3_profile(request):
         segment  = request.POST.get('segment', 'bike').strip()
         zone_id  = request.POST.get('zone', '').strip()
         upi_id   = request.POST.get('upi_id', '').strip()
-        language = request.POST.get('language', 'en').strip()
+        language = request.POST.get('language', 'en').strip().lower()
+        if language not in allowed_language_codes:
+            language = 'en'
 
         # Validation
         errors = []
@@ -189,6 +200,7 @@ def register_step3_profile(request):
             return render(request, 'accounts/register_step3.html', {
                 'zones': zones, 'platform_choices': PLATFORM_CHOICES,
                 'segment_choices': SEGMENT_CHOICES, 'plan': plan,
+                'language_choices': LANGUAGE_CHOICES,
             })
 
         try:
@@ -198,6 +210,7 @@ def register_step3_profile(request):
             return render(request, 'accounts/register_step3.html', {
                 'zones': zones, 'platform_choices': PLATFORM_CHOICES,
                 'segment_choices': SEGMENT_CHOICES, 'plan': plan,
+                'language_choices': LANGUAGE_CHOICES,
             })
 
         # Create / update WorkerProfile
@@ -224,6 +237,7 @@ def register_step3_profile(request):
         'zones':            zones,
         'platform_choices': PLATFORM_CHOICES,
         'segment_choices':  SEGMENT_CHOICES,
+        'language_choices': LANGUAGE_CHOICES,
         'plan':             plan,
     })
 

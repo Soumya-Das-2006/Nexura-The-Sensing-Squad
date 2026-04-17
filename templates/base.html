@@ -41,7 +41,9 @@
     {% block extra_css %}{% endblock %}
 </head>
 
-<body class="{% block body_class %}{% endblock %}" data-translate-endpoint="{% url 'core:translate' %}">
+<body class="{% block body_class %}{% endblock %}"
+      data-translate-endpoint="{% url 'core:translate' %}"
+      data-default-language="{% if request.user.is_authenticated %}{{ request.user.language|default:'en' }}{% else %}en{% endif %}">
 
     <!-- ── Spinner ──────────────────────────────────────────────────────── -->
     <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">

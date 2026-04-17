@@ -44,8 +44,11 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
 	LANGUAGE_CHOICES = [
 		("en", "English"),
-		("hi", "Hindi"),
-		("bn", "Bengali"),
+		("hi", "हिंदी (Hindi)"),
+		("mr", "मराठी (Marathi)"),
+		("bn", "বাংলা (Bengali)"),
+		("ta", "தமிழ் (Tamil)"),
+		("te", "తెలుగు (Telugu)"),
 	]
 
 	mobile = models.CharField(max_length=10, unique=True, validators=[mobile_validator])

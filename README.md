@@ -734,6 +734,16 @@ WAQI_API_KEY=
 | REST API Root | `http://localhost:8000/api/v1/` |
 | Health Check | `http://localhost:8000/health/` |
 
+### Multi-language translation (UI)
+
+- Language switching is handled by `static/js/translator.js` and the shared switcher partial at `templates/includes/_language_switcher.html`.
+- The UI translation API endpoint is `POST /translate/` (`apps/core/translation_views.py`) and is wired via `data-translate-endpoint` in `templates/base.html`.
+- To add or edit supported UI languages, update the `LANGUAGES` list in `static/js/translator.js` and keep `SUPPORTED_LANGS` in `apps/core/translation_views.py` aligned.
+- Worker notification language choices are defined in `apps/accounts/models.py` (`User.LANGUAGE_CHOICES`) and are used in registration/account forms.
+- Fallback behavior:
+  - Unsupported/invalid saved language defaults to `en`.
+  - Translation provider failures return original text gracefully.
+
 ### Demo Credentials
 
 | Role | Mobile | Password |
