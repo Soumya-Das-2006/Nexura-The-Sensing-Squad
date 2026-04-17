@@ -120,7 +120,8 @@ def _process_one_event(event) -> int:
                 )
 
             # Run fraud pipeline (outside transaction so ML inference doesn't lock DB)
-            _run_pipeline_and_route(claim)
+            from apps.fraud.service import process_claim_pipeline
+            process_claim_pipeline(claim)
 
         except Exception as exc:
             logger.error(
@@ -135,67 +136,7 @@ def _process_one_event(event) -> int:
     return created_count
 
 
-def _run_pipeline_and_route(claim):
-    """
-    Run fraud pipeline, update claim status, then queue payout or notification.
-    """
-    from .pipeline import run_fraud_pipeline
 
-    result = run_fraud_pipeline(claim)
-
-    claim.fraud_score = result['fraud_score']
-    claim.fraud_flags = result['flags']
-
-    decision = result['decision']
-
-    if decision == 'approve':
-        claim.status = 'approved'
-        claim.save(update_fields=['status', 'fraud_score', 'fraud_flags', 'updated_at'])
-        logger.info("[pipeline] Claim #%s → APPROVED (score=%.3f)", claim.pk, claim.fraud_score)
-
-        # Queue payout
-        _queue_payout(claim)
-
-        # Notify worker
-        _notify_worker(claim, 'claim_approved')
-
-    elif decision == 'hold':
-        claim.status = 'on_hold'
-        claim.save(update_fields=['status', 'fraud_score', 'fraud_flags', 'updated_at'])
-        logger.info("[pipeline] Claim #%s → ON HOLD (score=%.3f)", claim.pk, claim.fraud_score)
-
-        _notify_worker(claim, 'claim_under_review')
-
-    elif decision == 'reject':
-        claim.status           = 'rejected'
-        claim.rejection_reason = result.get('rejection_reason', 'Fraud detection flagged this claim.')
-        claim.save(update_fields=[
-            'status', 'fraud_score', 'fraud_flags', 'rejection_reason', 'updated_at'
-        ])
-        logger.info("[pipeline] Claim #%s → REJECTED (score=%.3f)", claim.pk, claim.fraud_score)
-
-        _notify_worker(claim, 'claim_rejected')
-
-
-def _queue_payout(claim):
-    """Queue the payout disbursement task."""
-    try:
-        from apps.payouts.tasks import disburse_payout
-        disburse_payout.delay(claim.pk)
-    except Exception as e:
-        logger.error("[process_claims] Could not queue payout for claim %s: %s", claim.pk, e)
-
-
-def _notify_worker(claim, event_type: str):
-    """Queue a WhatsApp / email notification to the worker."""
-    try:
-        from apps.notifications.tasks import send_claim_notification
-        send_claim_notification.delay(claim.pk, event_type)
-    except Exception as e:
-        logger.warning(
-            "[process_claims] Could not queue %s notification for claim %s: %s",
-            event_type, claim.pk, e,
-        )
 
 
 # ─── Manual approve / reject tasks (admin actions) ───────────────────────────
@@ -219,6 +160,7 @@ def manually_approve_claim(claim_id: int, admin_user_id: int):
         return
 
     claim.approve(reviewed_by=admin)
+    from apps.fraud.service import _queue_payout, _notify_worker
     _queue_payout(claim)
     _notify_worker(claim, 'claim_approved')
     logger.info("[manually_approve] Claim #%s approved by admin %s", claim_id, admin_user_id)
@@ -239,5 +181,6 @@ def manually_reject_claim(claim_id: int, admin_user_id: int, reason: str):
         return
 
     claim.reject(reason=reason, reviewed_by=admin)
+    from apps.fraud.service import _notify_worker
     _notify_worker(claim, 'claim_rejected')
     logger.info("[manually_reject] Claim #%s rejected by admin %s", claim_id, admin_user_id)

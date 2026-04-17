@@ -66,3 +66,43 @@ def fire_trigger(request):
 
     result = create_manual_event.delay(zone_id, trigger_type, severity, is_full, 'api_manual')
     return Response({'message': 'Trigger fired.', 'task_id': str(result.id)})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def live_aqi(request):
+    """
+    GET /api/v1/triggers/aqi/live/?zone_id=5
+    Returns current live AQI for the specified zone, or the worker's zone if omitted.
+    """
+    from apps.zones.models import Zone
+    from .services.aqi import AQIService, AQIAPIError
+
+    zone_id = request.query_params.get('zone_id')
+    
+    try:
+        if zone_id:
+            zone = Zone.objects.get(pk=zone_id)
+        else:
+            zone = request.user.workerprofile.zone
+            
+        if not zone:
+            return Response({'error': 'No zone specified or worker has no zone.'}, status=400)
+    except Exception as e:
+        return Response({'error': 'Zone not found.'}, status=404)
+
+    service = AQIService()
+    try:
+        data = service.fetch_aqi(zone)
+        return Response({
+            'zone': zone.display_name,
+            'aqi_value': data.aqi_value,
+            'station_name': data.station_name,
+            'dominant_pollutant': data.dominant_pollutant,
+            'category': data.category,
+            'color': data.color,
+            'source': 'waqi',
+            'cached': data.raw_payload.get('cached', False)
+        })
+    except AQIAPIError as e:
+        return Response({'error': str(e)}, status=502)

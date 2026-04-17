@@ -80,6 +80,27 @@ def _get_dashboard_context(request):
     except Exception:
         pass
 
+    # ── Live Conditions (Weather + AQI) ──────────────────────────────────
+    live_conditions = {
+        'temp': '--', 'rain': '--', 'aqi': '--',
+        'temp_ok': True, 'rain_ok': True, 'aqi_ok': True,
+    }
+    if profile.zone:
+        from apps.triggers.services.weather import WeatherService
+        from apps.triggers.services.aqi import AQIService
+        try:
+            w_data = WeatherService().fetch_weather(profile.zone)
+            live_conditions['temp'] = f"{w_data.temp_c:.1f}°C"
+            live_conditions['rain'] = f"{w_data.rain_mm:.1f} mm/h"
+            live_conditions['temp_ok'] = w_data.temp_c < 42.0
+            live_conditions['rain_ok'] = w_data.rain_mm < 35.0
+        except Exception: pass
+        try:
+            a_data = AQIService().fetch_aqi(profile.zone)
+            live_conditions['aqi'] = f"{int(a_data.aqi_value)}"
+            live_conditions['aqi_ok'] = a_data.aqi_value < 300
+        except Exception: pass
+
     # ── Stats ─────────────────────────────────────────────────────────────
     total_paid_out   = 0
     total_claims     = 0
@@ -95,12 +116,37 @@ def _get_dashboard_context(request):
     except Exception:
         pass
 
+    # ── Community Metrics ────────────────────────────────────────────────
+    community = {
+        'zone_workers_count': 0,
+        'circle_members_count': 0,
+        'circle_max': 20,
+    }
+    try:
+        if profile.zone:
+            community['zone_workers_count'] = profile.zone.workers.count()
+            from apps.circles.models import CircleMembership
+            circle_membership = CircleMembership.objects.filter(worker=user).first()
+            if circle_membership:
+                community['circle_members_count'] = circle_membership.circle.members.count()
+    except Exception: pass
+
+    # ── Risk Gauge Calculation ───────────────────────────────────────────
+    risk_score = profile.risk_score
+    risk_percent = min(100, int(risk_score * 100))
+    risk_rotation = (risk_percent / 100) * 180 - 90  # For gauge needle
+
     return {
         'profile':         profile,
         'active_policy':   active_policy,
         'recent_claims':   recent_claims,
         'recent_payouts':  recent_payouts,
         'zone_forecast':   zone_forecast,
+        'live_conditions': live_conditions,
+        'risk_percent':    risk_percent,
+        'risk_rotation':   risk_rotation,
+        'community':       community,
+        'last_simulation': request.session.get('last_simulation'),
         'total_paid_out':  total_paid_out,
         'total_claims':    total_claims,
         'approved_claims': approved_claims,
@@ -230,101 +276,104 @@ def account(request):
 # ─── KYC Submit ───────────────────────────────────────────────────────────────
 
 @_worker_required
-def kyc_submit(request):
-    """
-    Worker submits Aadhaar for KYC.
-    Aadhaar is immediately hashed — never stored as plaintext.
-    """
-    from apps.accounts.models import KYCRecord
+def kyc_request_otp(request):
+    """Step 1 — Worker requests KYC OTP."""
+    if request.method != "POST":
+        return redirect("workers:account")
 
-    if request.method != 'POST':
-        return redirect('workers:account')
+    from apps.accounts.kyc_service import request_kyc_otp
 
-    aadhaar_raw = request.POST.get('aadhaar', '').replace(' ', '').replace('-', '')
-    if len(aadhaar_raw) != 12 or not aadhaar_raw.isdigit():
-        messages.error(request, 'Please enter a valid 12-digit Aadhaar number.')
-        return redirect('workers:account')
+    result = request_kyc_otp(request.user)
 
-    kyc, _ = KYCRecord.objects.get_or_create(worker=request.user)
-    kyc.set_aadhaar(aadhaar_raw)
-    kyc.status       = 'submitted'
-    kyc.submitted_at = timezone.now()
-    kyc.save()
+    if result["success"]:
+        messages.success(request, result["message"])
+    else:
+        messages.error(request, result["message"])
 
-    # TODO Step 5 extension: trigger real Aadhaar OTP verification via UIDAI
-    messages.success(
-        request,
-        'KYC submitted successfully. Verification usually completes within 24 hours.'
-    )
-    return redirect('workers:account')
-
-
-# ─── API URLs stub ────────────────────────────────────────────────────────────
-# Full DRF serializers/views live in api_views.py (below)
+    return redirect("workers:account")
 
 
 @_worker_required
-def simulate_trigger(request):
-    """DEBUG ONLY: simulate a disruption trigger for the worker's zone."""
-    from django.conf import settings as djsettings
-    from django.http import HttpResponseForbidden
+def kyc_verify_otp(request):
+    """Step 2 — Worker submits OTP + Aadhaar to complete KYC."""
+    if request.method != "POST":
+        return redirect("workers:account")
 
-    if not djsettings.DEBUG:
-        return HttpResponseForbidden('Only available in DEBUG mode.')
-    if request.method != 'POST':
+    from apps.accounts.kyc_service import verify_kyc_otp
+
+    otp_entered = request.POST.get("otp", "").strip()
+    aadhaar_raw = request.POST.get("aadhaar", "").strip()
+
+    if not otp_entered:
+        messages.error(request, "Please enter the OTP.")
+        return redirect("workers:account")
+
+    result = verify_kyc_otp(request.user, otp_entered, aadhaar_raw)
+
+    if result["success"]:
+        messages.success(request, result["message"])
+    else:
+        messages.error(request, result["message"])
+
+    return redirect("workers:account")
+
+from django.http import HttpResponse
+
+@_worker_required
+def simulate_trigger(request):
+    """
+    Developer tool: Simulate a trigger for the worker's zone.
+    Only active in DEBUG mode.
+    """
+    from django.conf import settings
+    if not settings.DEBUG:
+        messages.error(request, 'This feature is only available in development mode.')
         return redirect('workers:dashboard')
 
-    from apps.triggers.models import DisruptionEvent
-    from apps.claims.models import Claim
-    from apps.policies.models import Policy
+    if request.method != "POST":
+        return redirect('workers:dashboard')
 
-    user         = request.user
-    profile      = user.workerprofile
-    trigger_type = request.POST.get('trigger_type', 'heavy_rain')
+    trigger_type = request.POST.get('trigger_type')
+    severity = float(request.POST.get('severity', 100.0))
 
+    profile = request.user.workerprofile
     if not profile.zone:
-        messages.error(request, 'You need to set your operating zone first.')
-        return redirect('workers:account')
+        messages.error(request, 'Please set your zone first.')
+        return redirect('workers:dashboard')
 
-    severity_map  = {'heavy_rain':42.0,'extreme_heat':44.0,'platform_down':120.0,'severe_aqi':320.0}
-    threshold_map = {'heavy_rain':35.0,'extreme_heat':42.0,'platform_down':60.0,'severe_aqi':300.0}
-
-    event = DisruptionEvent.objects.create(
-        zone=profile.zone,
+    # Trigger the task
+    from apps.triggers.tasks import create_manual_event
+    from django.utils import timezone
+    
+    create_manual_event.delay(
+        zone_id=profile.zone.id,
         trigger_type=trigger_type,
-        severity_value=severity_map.get(trigger_type, 1.0),
-        threshold_value=threshold_map.get(trigger_type, 1.0),
-        is_full_trigger=True,
-        source_api='dev_simulate',
+        severity=severity,
+        is_full=True,
+        source='simulation_tool'
     )
 
-    try:
-        policy = user.policies.filter(status='active').latest('start_date')
-    except Policy.DoesNotExist:
-        messages.error(request, 'You need an active policy to test claim creation. Select a plan first.')
-        event.delete()
-        return redirect('policies:plans')
+    # Store simulation info in session for the dashboard to show a log
+    request.session['last_simulation'] = {
+        'type':      trigger_type.replace('_', ' ').title(),
+        'zone':      profile.zone.display_name,
+        'time':      timezone.now().strftime('%H:%M:%S'),
+        'severity':  severity,
+        'steps': [
+            f"Manual signal injected: {trigger_type} @ {severity}",
+            f"DisruptionEvent created for {profile.zone.display_name}",
+            "Asynchronous claim generator queued (Celery)",
+            "Fraud detection service awaiting claim data..."
+        ]
+    }
 
-    claim, created = Claim.objects.get_or_create(
-        worker=user,
-        disruption_event=event,
-        defaults={
-            'policy':      policy,
-            'payout_amount': policy.weekly_coverage,
-            'fraud_score': 0.12,
-            'fraud_flags': [{'layer':1,'flag':'dev_simulate','detail':'Simulated trigger — dev mode','score_contribution':0.0}],
-            'status':      'pending',
-        }
-    )
+    messages.success(request, f'Successfully simulated {trigger_type} trigger.')
+    return redirect('workers:dashboard')
 
-    if created:
-        messages.success(
-            request,
-            f'✅ Test claim #{claim.pk} created! Trigger: {event.get_trigger_type_display()} '
-            f'in {profile.zone.display_name}. Fraud score: 0.12 (below 0.50 threshold). '
-            f'Ask an admin to approve it, or it will auto-approve when Celery runs.'
-        )
-    else:
-        messages.info(request, f'A claim for this event already exists (#{claim.pk}).')
 
-    return redirect('claims:my_claims')
+@_worker_required
+def clear_simulation(request):
+    """Developer tool: Clear the last simulation log from session."""
+    if 'last_simulation' in request.session:
+        del request.session['last_simulation']
+    return redirect('workers:dashboard')

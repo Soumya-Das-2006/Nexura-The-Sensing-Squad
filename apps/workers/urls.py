@@ -8,5 +8,7 @@ urlpatterns = [
     path('dashboard/',                       views.dashboard,          name='dashboard'),
     path('dashboard/simulate-trigger/',      views.simulate_trigger,   name='simulate_trigger'),
     path('account/',                         views.account,            name='account'),
-    path('kyc/submit/',                      views.kyc_submit,         name='kyc_submit'),
+    path("kyc/request-otp/", views.kyc_request_otp, name="kyc_request_otp"),
+    path("kyc/verify-otp/",  views.kyc_verify_otp,  name="kyc_verify_otp"),
+    path('dashboard/clear-simulation/', views.clear_simulation, name='clear_simulation'),
 ]

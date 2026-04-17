@@ -762,12 +762,25 @@ class HealthCheckView(View):
         except Exception:
             redis_ok = False
 
-        status = 'ok' if (db_ok and redis_ok) else 'degraded'
+        # ── Celery worker check ───────────────────────────────────────
+        celery_ok = False
+        try:
+            from nexura.celery import app as celery_app
+            inspect = celery_app.control.inspect(timeout=2.0)
+            ping_result = inspect.ping()
+            celery_ok = bool(ping_result)  # Non-empty dict means workers responded
+        except Exception as exc:
+            logger.warning("[HealthCheck] Celery ping failed: %s", exc)
+            celery_ok = False
+
+        all_ok = db_ok and redis_ok and celery_ok
+        status = 'ok' if all_ok else 'degraded'
         return JsonResponse({
-            'status': status,
-            'db':     'ok' if db_ok    else 'error',
-            'cache':  'ok' if redis_ok else 'error',
-            'app':    'nexura',
+            'status':  status,
+            'db':      'ok' if db_ok     else 'error',
+            'cache':   'ok' if redis_ok  else 'error',
+            'celery':  'ok' if celery_ok else 'error',
+            'app':     'nexura',
             'version': '1.0.0',
         }, status=200 if status == 'ok' else 503)
 

@@ -2,6 +2,8 @@ from django.apps import AppConfig
 
 
 class ClaimsConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.claims'
-    verbose_name = 'Claims'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.claims"
+
+    def ready(self):
+        import apps.claims.signals  # noqa: F401
