@@ -28,7 +28,8 @@ urlpatterns = [
     path('', include('apps.circles.urls')),
     path('', include('apps.documents.urls')),
     path('', include('apps.pricing.urls')),
-
+    path('', include('apps.chatbot.urls')),
+    
     # Admin portal web views
     path('', include('apps.admin_portal.urls')),
 

@@ -120,5 +120,10 @@
     <!-- ── Inline Page Scripts ───────────────────────────────────────────── -->
     {% block extra_js %}{% endblock %}
 
+    {# ── Floating AI Chatbot ─────────────────────────────────────────────── #}
+    {% block chatbot_float %}
+        {% include "includes/_chatbot_float.html" %}
+    {% endblock %}
+
 </body>
 </html>
