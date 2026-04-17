@@ -105,7 +105,7 @@
                         <div class="d-flex align-items-center gap-2">
                             <div class="fraud-score-bar">
                                 <div class="fraud-score-fill {{ claim.fraud_color }}"
-                                     style="width: {{ claim.fraud_score|floatformat:0 }}0%"></div>
+                                     style="width: {% widthratio claim.fraud_score 1 100 %}%"></div>
                             </div>
                             <span class="small text-muted">{{ claim.fraud_score|floatformat:2 }}</span>
                         </div>

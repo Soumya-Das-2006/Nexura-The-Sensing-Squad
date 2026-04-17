@@ -12,7 +12,7 @@ from apps.zones.models import Zone
 from apps.policies.models import PlanTier, Policy
 from apps.triggers.models import DisruptionEvent
 from apps.claims.models import Claim
-from apps.fraud.service import process_claim_pipeline
+from apps.fraud.service import run_fraud_pipeline
 from django.utils import timezone
 from decimal import Decimal
 
@@ -77,13 +77,13 @@ def run_e2e():
 
     # 6. Run Fraud Pipeline
     print("Running Fraud Pipeline...")
-    process_claim_pipeline(claim)
+    run_fraud_pipeline(claim)
     
     # Refresh claim to see status
     claim.refresh_from_db()
     print(f"Claim Status: {claim.status}, Fraud Score: {claim.fraud_score}")
     print("Fraud Flags:")
-    for flag in claim.fraud_flag_records.filter(is_deleted=False):
+    for flag in claim.fraud_flag_records.all():
         print(f" - {flag.layer}: {flag.flag_type} ({flag.detail})")
 
     print("--- E2E Test Completed ---")

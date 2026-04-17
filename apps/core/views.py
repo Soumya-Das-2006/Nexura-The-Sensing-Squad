@@ -24,12 +24,39 @@ class HomeView(View):
         if request.user.is_authenticated and request.user.is_worker:
             return redirect('workers:dashboard')
 
+        # Dynamic stats from the database (with demo-friendly floors)
+        from django.contrib.auth import get_user_model
+        from apps.zones.models import Zone
+        from apps.claims.models import Claim
+
+        User = get_user_model()
+        worker_count = User.objects.filter(is_worker=True).count()
+        city_count = Zone.objects.values('city').distinct().count() or 7
+        total_claims = Claim.objects.count()
+        approved_claims = Claim.objects.filter(status='approved').count()
+        approval_rate = int((approved_claims / total_claims) * 100) if total_claims > 0 else 94
+
+        # Format worker count with Indian comma notation
+        def _indian_fmt(n):
+            s = str(n)
+            if len(s) <= 3:
+                return s
+            last3 = s[-3:]
+            rest = s[:-3]
+            groups = []
+            while rest:
+                groups.insert(0, rest[-2:])
+                rest = rest[:-2]
+            return ','.join(groups) + ',' + last3
+
+        worker_display = _indian_fmt(worker_count) + '+' if worker_count > 0 else '0'
+
         ctx = {
             'stats': [
-                {'icon': 'fas fa-users',    'value': '1,24,000+', 'label': 'Workers Protected'},
-                {'icon': 'fas fa-city',     'value': '7',         'label': 'Cities Covered'},
-                {'icon': 'fas fa-bolt',     'value': '<2 hrs',    'label': 'Avg Payout Time'},
-                {'icon': 'fas fa-check-circle', 'value': '94%',   'label': 'Auto-Approved Claims'},
+                {'icon': 'fas fa-users',        'value': worker_display, 'label': 'Workers Protected'},
+                {'icon': 'fas fa-city',          'value': str(city_count), 'label': 'Cities Covered'},
+                {'icon': 'fas fa-bolt',          'value': '<2 hrs',       'label': 'Avg Payout Time'},
+                {'icon': 'fas fa-check-circle',  'value': f'{approval_rate}%', 'label': 'Auto-Approved Claims'},
             ],
             'plans': [
                 {
@@ -636,7 +663,26 @@ class ContactView(View):
 
         from .models import ContactMessage
         ContactMessage.objects.create(name=name, email=email, subject=subject, message=message)
-        # TODO Step 16: send email via SendGrid
+
+        # Send confirmation email via SendGrid (or SMTP fallback)
+        try:
+            from django.core.mail import send_mail
+            send_mail(
+                subject=f'Nexura — We received your message: {subject}',
+                message=(
+                    f'Hi {name},\n\n'
+                    f'Thank you for contacting Nexura. We have received your message '
+                    f'and will respond within 24 hours.\n\n'
+                    f'Your message:\n{message}\n\n'
+                    f'— Team Nexura\nsupport@nexaura.in'
+                ),
+                from_email=None,  # uses DEFAULT_FROM_EMAIL
+                recipient_list=[email],
+                fail_silently=True,
+            )
+        except Exception as mail_err:
+            logger.warning('[contact] Confirmation email failed for %s: %s', email, mail_err)
+
         logger.info('Contact form: %s (%s) — %s', name, email, subject)
         messages.success(
             request,

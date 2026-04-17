@@ -36,15 +36,15 @@
             <div class="d-flex flex-column gap-2">
                 <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-light">
                     <span class="text-muted small"><i class="fas fa-cloud-showers-heavy text-primary me-2"></i>Rain</span>
-                    <strong class="small">{{ worker_forecast.rain_probability|floatformat:0 }}0%</strong>
+                    <strong class="small">{% widthratio worker_forecast.rain_probability 1 100 %}%</strong>
                 </div>
                 <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-light">
                     <span class="text-muted small"><i class="fas fa-thermometer-full text-danger me-2"></i>Heat</span>
-                    <strong class="small">{{ worker_forecast.heat_probability|floatformat:0 }}0%</strong>
+                    <strong class="small">{% widthratio worker_forecast.heat_probability 1 100 %}%</strong>
                 </div>
                 <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-light">
                     <span class="text-muted small"><i class="fas fa-smog text-warning me-2"></i>AQI</span>
-                    <strong class="small">{{ worker_forecast.aqi_probability|floatformat:0 }}0%</strong>
+                    <strong class="small">{% widthratio worker_forecast.aqi_probability 1 100 %}%</strong>
                 </div>
             </div>
             <p class="text-muted mt-3 mb-0" style="font-size:11px;">
@@ -67,11 +67,11 @@
             <div class="mb-4">
                 <div class="d-flex justify-content-between mb-2">
                     <span class="fw-semibold small"><i class="fas fa-cloud-showers-heavy text-primary me-2"></i>Heavy Rain (&gt;35 mm/hr)</span>
-                    <span class="fw-bold small">{{ bars.rain_probability|floatformat:0 }}0%</span>
+                    <span class="fw-bold small">{% widthratio bars.rain_probability 1 100 %}%</span>
                 </div>
                 <div class="forecast-bar-track" style="height:14px;">
                     <div class="forecast-bar-fill {% if bars.rain_probability > 0.6 %}high{% elif bars.rain_probability > 0.3 %}moderate{% else %}low{% endif %}"
-                         style="width:{{ bars.rain_probability|floatformat:0 }}0%"></div>
+                         style="width:{% widthratio bars.rain_probability 1 100 %}%"></div>
                 </div>
                 <p class="text-muted mt-1 mb-0" style="font-size:11px;">
                     Forecasted: {{ bars.forecasted_rain_mm|floatformat:1 }} mm/hr avg
@@ -82,11 +82,11 @@
             <div class="mb-4">
                 <div class="d-flex justify-content-between mb-2">
                     <span class="fw-semibold small"><i class="fas fa-thermometer-full text-danger me-2"></i>Extreme Heat (&gt;42°C)</span>
-                    <span class="fw-bold small">{{ bars.heat_probability|floatformat:0 }}0%</span>
+                    <span class="fw-bold small">{% widthratio bars.heat_probability 1 100 %}%</span>
                 </div>
                 <div class="forecast-bar-track" style="height:14px;">
                     <div class="forecast-bar-fill {% if bars.heat_probability > 0.6 %}high{% elif bars.heat_probability > 0.3 %}moderate{% else %}low{% endif %}"
-                         style="width:{{ bars.heat_probability|floatformat:0 }}0%"></div>
+                         style="width:{% widthratio bars.heat_probability 1 100 %}%"></div>
                 </div>
                 <p class="text-muted mt-1 mb-0" style="font-size:11px;">
                     Forecasted: {{ bars.forecasted_temp_c|floatformat:1 }}°C peak temp
@@ -97,11 +97,11 @@
             <div class="mb-4">
                 <div class="d-flex justify-content-between mb-2">
                     <span class="fw-semibold small"><i class="fas fa-smog text-warning me-2"></i>Severe AQI (&gt;300)</span>
-                    <span class="fw-bold small">{{ bars.aqi_probability|floatformat:0 }}0%</span>
+                    <span class="fw-bold small">{% widthratio bars.aqi_probability 1 100 %}%</span>
                 </div>
                 <div class="forecast-bar-track" style="height:14px;">
                     <div class="forecast-bar-fill {% if bars.aqi_probability > 0.6 %}high{% elif bars.aqi_probability > 0.3 %}moderate{% else %}low{% endif %}"
-                         style="width:{{ bars.aqi_probability|floatformat:0 }}0%"></div>
+                         style="width:{% widthratio bars.aqi_probability 1 100 %}%"></div>
                 </div>
                 <p class="text-muted mt-1 mb-0" style="font-size:11px;">
                     Forecasted AQI: {{ bars.forecasted_aqi|floatformat:0 }}
@@ -112,11 +112,11 @@
             <div class="pt-3" style="border-top:1px solid #e2e8f0;">
                 <div class="d-flex justify-content-between mb-2">
                     <span class="fw-bold"><i class="fas fa-bolt text-primary me-2"></i>Overall Disruption Probability</span>
-                    <span class="fw-black text-primary">{{ bars.disruption_probability|floatformat:0 }}0%</span>
+                    <span class="fw-black text-primary">{% widthratio bars.disruption_probability 1 100 %}%</span>
                 </div>
                 <div class="forecast-bar-track" style="height:18px;">
                     <div class="forecast-bar-fill {% if bars.disruption_probability > 0.6 %}critical{% elif bars.disruption_probability > 0.4 %}high{% elif bars.disruption_probability > 0.2 %}moderate{% else %}low{% endif %}"
-                         style="width:{{ bars.disruption_probability|floatformat:0 }}0%"></div>
+                         style="width:{% widthratio bars.disruption_probability 1 100 %}%"></div>
                 </div>
                 <p class="text-muted mt-2 mb-0 small">
                     {% if bars.overall_risk_level == 'High' or bars.overall_risk_level == 'Critical' %}
@@ -188,7 +188,7 @@
                             {{ fc.overall_risk_level }}
                         </span>
                         <span class="text-muted" style="font-size:11px;">
-                            {{ fc.disruption_probability|floatformat:0 }}0% disruption risk
+                            {% widthratio fc.disruption_probability 1 100 %}% disruption risk
                         </span>
                     </div>
                 </div>
@@ -217,10 +217,10 @@
                 {% for h in history %}
                 <tr>
                     <td class="small fw-semibold">{{ h.forecast_date|date:"d M Y" }}</td>
-                    <td class="small">{{ h.rain_probability|floatformat:0 }}0%</td>
-                    <td class="small">{{ h.heat_probability|floatformat:0 }}0%</td>
-                    <td class="small">{{ h.aqi_probability|floatformat:0 }}0%</td>
-                    <td class="small">{{ h.disruption_probability|floatformat:0 }}0%</td>
+                    <td class="small">{% widthratio h.rain_probability 1 100 %}%</td>
+                    <td class="small">{% widthratio h.heat_probability 1 100 %}%</td>
+                    <td class="small">{% widthratio h.aqi_probability 1 100 %}%</td>
+                    <td class="small">{% widthratio h.disruption_probability 1 100 %}%</td>
                     <td>
                         <span class="forecast-risk-badge {{ h.overall_risk_level|lower }}">
                             {{ h.overall_risk_level }}

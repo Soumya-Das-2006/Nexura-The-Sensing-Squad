@@ -15,5 +15,7 @@ urlpatterns = [
     path('admin-portal/zones/',                         views.zones_list,       name='zones'),
     path('admin-portal/forecast/',                      views.forecast_overview,name='forecast'),
     path('admin-portal/fire-trigger/',                  views.fire_test_trigger,name='fire_trigger'),
+    path('admin-portal/kyc/<int:user_id>/approve/',     views.kyc_approve,      name='kyc_approve'),
+    path('admin-portal/kyc/<int:user_id>/reject/',      views.kyc_reject,       name='kyc_reject'),
     path('admin-portal/support/',                       views.support_tickets,  name='support'),
 ]

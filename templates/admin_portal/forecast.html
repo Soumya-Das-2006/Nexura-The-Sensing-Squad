@@ -41,25 +41,25 @@
                     <span class="forecast-day-label"><i class="fas fa-cloud-showers-heavy text-primary" style="font-size:12px;"></i></span>
                     <div class="forecast-bar-track">
                         <div class="forecast-bar-fill {% if fc.rain_probability > 0.6 %}high{% elif fc.rain_probability > 0.3 %}moderate{% else %}low{% endif %}"
-                             style="width:{{ fc.rain_probability|floatformat:0 }}0%"></div>
+                             style="width:{% widthratio fc.rain_probability 1 100 %}%"></div>
                     </div>
-                    <span class="text-muted small">{{ fc.rain_probability|floatformat:0 }}0%</span>
+                    <span class="text-muted small">{% widthratio fc.rain_probability 1 100 %}%</span>
                 </div>
                 <div class="forecast-day-row">
                     <span class="forecast-day-label"><i class="fas fa-thermometer-full text-danger" style="font-size:12px;"></i></span>
                     <div class="forecast-bar-track">
                         <div class="forecast-bar-fill {% if fc.heat_probability > 0.6 %}high{% elif fc.heat_probability > 0.3 %}moderate{% else %}low{% endif %}"
-                             style="width:{{ fc.heat_probability|floatformat:0 }}0%"></div>
+                             style="width:{% widthratio fc.heat_probability 1 100 %}%"></div>
                     </div>
-                    <span class="text-muted small">{{ fc.heat_probability|floatformat:0 }}0%</span>
+                    <span class="text-muted small">{% widthratio fc.heat_probability 1 100 %}%</span>
                 </div>
                 <div class="forecast-day-row">
                     <span class="forecast-day-label"><i class="fas fa-smog text-warning" style="font-size:12px;"></i></span>
                     <div class="forecast-bar-track">
                         <div class="forecast-bar-fill {% if fc.aqi_probability > 0.6 %}high{% elif fc.aqi_probability > 0.3 %}moderate{% else %}low{% endif %}"
-                             style="width:{{ fc.aqi_probability|floatformat:0 }}0%"></div>
+                             style="width:{% widthratio fc.aqi_probability 1 100 %}%"></div>
                     </div>
-                    <span class="text-muted small">{{ fc.aqi_probability|floatformat:0 }}0%</span>
+                    <span class="text-muted small">{% widthratio fc.aqi_probability 1 100 %}%</span>
                 </div>
             </div>
 
@@ -79,7 +79,7 @@
                 </div>
                 <div class="text-center flex-fill">
                     <p class="text-muted mb-0" style="font-size:10px;">DISRUPT</p>
-                    <p class="fw-bold mb-0 small">{{ fc.disruption_probability|floatformat:0 }}0%</p>
+                    <p class="fw-bold mb-0 small">{% widthratio fc.disruption_probability 1 100 %}%</p>
                 </div>
             </div>
             <p class="text-muted mt-2 mb-0" style="font-size:10px;">
