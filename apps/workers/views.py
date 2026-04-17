@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.views import View
 from django.utils.decorators import method_decorator
 
+from apps.accounts.models import USER_LANGUAGE_CHOICES
 from .models import WorkerProfile
 
 logger = logging.getLogger(__name__)
@@ -199,14 +200,7 @@ def account(request):
         ('auto',    'Auto Rickshaw'),
         ('car',     'Car'),
     ]
-    LANGUAGE_CHOICES = [
-        ('en', 'English'),
-        ('hi', 'हिंदी (Hindi)'),
-        ('mr', 'मराठी (Marathi)'),
-        ('bn', 'বাংলা (Bengali)'),
-        ('ta', 'தமிழ் (Tamil)'),
-        ('te', 'తెలుగు (Telugu)'),
-    ]
+    allowed_language_codes = {code for code, _ in USER_LANGUAGE_CHOICES}
 
     if request.method == 'POST':
         action = request.POST.get('action', 'profile')
@@ -216,7 +210,9 @@ def account(request):
             platform = request.POST.get('platform', '').strip()
             segment  = request.POST.get('segment', '').strip()
             zone_id  = request.POST.get('zone', '').strip()
-            language = request.POST.get('language', 'en').strip()
+            language = request.POST.get('language', 'en').strip().lower()
+            if language not in allowed_language_codes:
+                language = 'en'
             email    = request.POST.get('email', '').strip()
 
             errors = []
@@ -267,7 +263,7 @@ def account(request):
         'zones':            zones,
         'platform_choices': PLATFORM_CHOICES,
         'segment_choices':  SEGMENT_CHOICES,
-        'language_choices': LANGUAGE_CHOICES,
+        'language_choices': USER_LANGUAGE_CHOICES,
         'kyc_status':       profile.kyc_status(),
     }
     return render(request, 'workers/account.html', ctx)
