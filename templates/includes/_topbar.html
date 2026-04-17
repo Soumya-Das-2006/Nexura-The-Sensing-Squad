@@ -27,41 +27,66 @@
 
                     <!-- Social icons -->
                     <div class="d-flex border-end border-primary pe-3">
-                        <a class="btn p-0 text-primary me-3" href="#" aria-label="Facebook">
+                        <a class="btn p-0 text-primary me-3" href="{{ nexura.social.facebook }}" target="_blank" rel="noopener" aria-label="Facebook">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a class="btn p-0 text-primary me-3" href="#" aria-label="Twitter">
+                        <a class="btn p-0 text-primary me-3" href="{{ nexura.social.twitter }}" target="_blank" rel="noopener" aria-label="Twitter">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a class="btn p-0 text-primary me-3" href="#" aria-label="Instagram">
+                        <a class="btn p-0 text-primary me-3" href="{{ nexura.social.instagram }}" target="_blank" rel="noopener" aria-label="Instagram">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a class="btn p-0 text-primary me-0" href="#" aria-label="LinkedIn">
+                        <a class="btn p-0 text-primary me-0" href="{{ nexura.social.linkedin }}" target="_blank" rel="noopener" aria-label="LinkedIn">
                             <i class="fab fa-linkedin-in"></i>
                         </a>
                     </div>
 
-                    <!-- Language selector -->
-                    <div class="dropdown ms-3">
-                        <a href="#" class="dropdown-toggle text-dark" data-bs-toggle="dropdown">
-                            <small>
-                                <i class="fas fa-globe text-primary me-2"></i>
-                                {% if request.session.language == 'hi' %}हिंदी
-                                {% elif request.session.language == 'mr' %}मराठी
-                                {% elif request.session.language == 'bn' %}বাংলা
-                                {% elif request.session.language == 'ta' %}தமிழ்
-                                {% elif request.session.language == 'te' %}తెలుగు
-                                {% else %}English{% endif %}
-                            </small>
-                        </a>
-                        <div class="dropdown-menu rounded">
-                            <a href="?lang=en" class="dropdown-item">English</a>
-                            <a href="?lang=hi" class="dropdown-item">हिंदी (Hindi)</a>
-                            <a href="?lang=mr" class="dropdown-item">मराठी (Marathi)</a>
-                            <a href="?lang=bn" class="dropdown-item">বাংলা (Bengali)</a>
-                            <a href="?lang=ta" class="dropdown-item">தமிழ் (Tamil)</a>
-                            <a href="?lang=te" class="dropdown-item">తెలుగు (Telugu)</a>
+                    <!-- ── Language Selector ──────────────────────────────── -->
+
+                    <!-- Desktop: Custom glassmorphism dropdown -->
+                    <div class="tl-desktop-switcher ms-3">
+                        <button id="tl-desktop-trigger"
+                                class="tl-desktop-trigger"
+                                type="button"
+                                aria-haspopup="listbox"
+                                aria-expanded="false"
+                                aria-label="Select language"
+                                aria-controls="tl-desktop-menu">
+                            <i class="fas fa-globe tl-globe" aria-hidden="true"></i>
+                            <span id="tl-trigger-label">🇬🇧 English</span>
+                            <i class="bi bi-chevron-down tl-caret" aria-hidden="true"></i>
+                        </button>
+
+                        <div id="tl-desktop-menu"
+                             class="tl-desktop-menu"
+                             role="listbox"
+                             aria-label="Available languages">
+                            <div class="tl-menu-header">🌐 Select Language</div>
+                            <div class="tl-menu-scroll">
+                                {# Populated by translator.js at runtime #}
+                            </div>
+                            <div class="tl-menu-footer">
+                                <button id="tts-toggle-desktop"
+                                        class="tl-tts-btn"
+                                        type="button"
+                                        aria-label="Read page aloud">
+                                    <i class="bi bi-volume-up-fill"></i>
+                                    <span>Read Aloud</span>
+                                </button>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Mobile: Globe trigger (opens bottom sheet) -->
+                    <div class="tl-topbar-mobile-wrap ms-2">
+                        <button id="mobile-language-trigger"
+                                class="tl-mobile-trigger"
+                                type="button"
+                                aria-haspopup="dialog"
+                                aria-label="Select language">
+                            <i class="fas fa-globe" aria-hidden="true"></i>
+                            <span id="tl-mobile-trigger-label">🇬🇧</span>
+                        </button>
                     </div>
 
                     <!-- Auth quick links -->
