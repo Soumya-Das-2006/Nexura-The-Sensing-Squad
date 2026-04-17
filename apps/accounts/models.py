@@ -10,6 +10,15 @@ mobile_validator = RegexValidator(
 	message="Mobile number must be a 10-digit number.",
 )
 
+USER_LANGUAGE_CHOICES = [
+	("en", "English"),
+	("hi", "हिंदी (Hindi)"),
+	("mr", "मराठी (Marathi)"),
+	("bn", "বাংলা (Bengali)"),
+	("ta", "தமிழ் (Tamil)"),
+	("te", "తెలుగు (Telugu)"),
+]
+
 
 class UserManager(BaseUserManager):
 	def _normalize_mobile(self, mobile: str) -> str:
@@ -42,11 +51,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-	LANGUAGE_CHOICES = [
-		("en", "English"),
-		("hi", "Hindi"),
-		("bn", "Bengali"),
-	]
+	LANGUAGE_CHOICES = USER_LANGUAGE_CHOICES
 
 	mobile = models.CharField(max_length=10, unique=True, validators=[mobile_validator])
 	email = models.EmailField(blank=True, null=True)

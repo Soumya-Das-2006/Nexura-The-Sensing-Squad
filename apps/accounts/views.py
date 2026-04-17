@@ -18,7 +18,7 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.views.decorators.http import require_POST
 from django.conf import settings
 
-from .models import User, OTPRecord, KYCRecord
+from .models import User, OTPRecord, KYCRecord, USER_LANGUAGE_CHOICES
 from .otp_service import generate_otp, verify_otp
 
 logger = logging.getLogger(__name__)
@@ -164,13 +164,17 @@ def register_step3_profile(request):
         ('car',     'Car'),
     ]
 
+    allowed_language_codes = {code for code, _ in USER_LANGUAGE_CHOICES}
+
     if request.method == 'POST':
         name     = request.POST.get('name', '').strip()
         platform = request.POST.get('platform', '').strip()
         segment  = request.POST.get('segment', 'bike').strip()
         zone_id  = request.POST.get('zone', '').strip()
         upi_id   = request.POST.get('upi_id', '').strip()
-        language = request.POST.get('language', 'en').strip()
+        language = request.POST.get('language', 'en').strip().lower()
+        if language not in allowed_language_codes:
+            language = 'en'
 
         # Validation
         errors = []
@@ -189,6 +193,7 @@ def register_step3_profile(request):
             return render(request, 'accounts/register_step3.html', {
                 'zones': zones, 'platform_choices': PLATFORM_CHOICES,
                 'segment_choices': SEGMENT_CHOICES, 'plan': plan,
+                'language_choices': USER_LANGUAGE_CHOICES,
             })
 
         try:
@@ -198,6 +203,7 @@ def register_step3_profile(request):
             return render(request, 'accounts/register_step3.html', {
                 'zones': zones, 'platform_choices': PLATFORM_CHOICES,
                 'segment_choices': SEGMENT_CHOICES, 'plan': plan,
+                'language_choices': USER_LANGUAGE_CHOICES,
             })
 
         # Create / update WorkerProfile
@@ -224,6 +230,7 @@ def register_step3_profile(request):
         'zones':            zones,
         'platform_choices': PLATFORM_CHOICES,
         'segment_choices':  SEGMENT_CHOICES,
+        'language_choices': USER_LANGUAGE_CHOICES,
         'plan':             plan,
     })
 

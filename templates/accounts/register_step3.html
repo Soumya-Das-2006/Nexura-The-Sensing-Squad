@@ -117,12 +117,12 @@
                     <div class="col-12">
                         <label class="form-label fw-semibold small">Preferred Language</label>
                         <select name="language" class="form-select">
-                            <option value="en" {% if request.POST.language == 'en' or not request.POST.language %}selected{% endif %}>English</option>
-                            <option value="hi" {% if request.POST.language == 'hi' %}selected{% endif %}>हिंदी (Hindi)</option>
-                            <option value="mr" {% if request.POST.language == 'mr' %}selected{% endif %}>मराठी (Marathi)</option>
-                            <option value="bn" {% if request.POST.language == 'bn' %}selected{% endif %}>বাংলা (Bengali)</option>
-                            <option value="ta" {% if request.POST.language == 'ta' %}selected{% endif %}>தமிழ் (Tamil)</option>
-                            <option value="te" {% if request.POST.language == 'te' %}selected{% endif %}>తెలుగు (Telugu)</option>
+                            {% for val, label in language_choices %}
+                            <option value="{{ val }}"
+                                {% if request.POST.language == val or not request.POST.language and val == 'en' %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
                         </select>
                         <div class="form-text">WhatsApp notifications will be sent in this language.</div>
                     </div>
