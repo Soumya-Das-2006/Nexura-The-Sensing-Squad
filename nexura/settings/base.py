@@ -57,6 +57,7 @@ LOCAL_APPS = [
     'apps.circles',
     'apps.documents',
     'apps.admin_portal',
+    'apps.chatbot',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -244,7 +245,7 @@ CELERY_BEAT_SCHEDULE = {
 # ─── Internationalization ─────────────────────────────────────────────────────
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE     = 'Asia/Kolkata'
-USE_I18N      = True
+USE_I18N      = False
 USE_TZ        = True
 
 # ─── API Docs ─────────────────────────────────────────────────────────────────
@@ -284,6 +285,26 @@ AWS_S3_REGION_NAME      = env('AWS_S3_REGION_NAME', default='ap-south-1')
 OTP_EXPIRY_MINUTES = env.int('OTP_EXPIRY_MINUTES', default=10)
 OTP_TEST_MODE      = env.bool('OTP_TEST_MODE', default=True)
 OTP_TEST_CODE      = env('OTP_TEST_CODE', default='123456')
+# ── LLM Provider Config ───────────────────────────────────────────────────────
+# Choose one: 'anthropic' | 'openai' | 'gemini'
+# The engine tries the configured provider first, then falls back automatically.
+CHATBOT_LLM_PROVIDER = env('CHATBOT_LLM_PROVIDER', default='anthropic')
+
+# Anthropic (Claude)
+ANTHROPIC_API_KEY = env('ANTHROPIC_API_KEY', default='')
+ANTHROPIC_MODEL   = env('ANTHROPIC_MODEL',   default='claude-sonnet-4-20250514')
+
+# OpenAI (GPT-4o)
+OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
+OPENAI_MODEL   = env('OPENAI_MODEL',   default='gpt-4o-mini')
+
+# Google Gemini
+GEMINI_API_KEY = env('GEMINI_API_KEY', default='')
+GEMINI_MODEL   = env('GEMINI_MODEL',   default='gemini-1.5-flash')
+
+# ── Chatbot behavior ──────────────────────────────────────────────────────────
+CHATBOT_RULE_THRESHOLD = 0.88    # confidence above this → use rules, below → use LLM
+CHATBOT_HISTORY_WINDOW = 10      # number of past messages sent to LLM for context
 
 # ML Models path
 ML_MODELS_DIR = BASE_DIR / 'ml_models'

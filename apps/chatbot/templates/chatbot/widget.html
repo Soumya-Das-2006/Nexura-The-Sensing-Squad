@@ -1,0 +1,810 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexura Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Base ──────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root {
+  --white:       #ffffff;
+  --off-white:   #f8f9fb;
+  --surface:     #f2f4f7;
+  --border:      #e4e8ef;
+  --border-soft: #eef0f5;
+  --text-primary:#0f1623;
+  --text-second: #4a5568;
+  --text-muted:  #8a96a8;
+  --accent:      #1a56db;
+  --accent-light:#e8efff;
+  --accent-hover:#1447c0;
+  --success:     #0ea46e;
+  --warning:     #f59e0b;
+  --danger:      #ef4444;
+  --radius-sm:   8px;
+  --radius-md:   14px;
+  --radius-lg:   20px;
+  --radius-xl:   28px;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.05);
+  --shadow-lg:   0 12px 40px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-xl:   0 24px 64px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.07);
+  --font:        'Sora', system-ui, sans-serif;
+  --mono:        'JetBrains Mono', monospace;
+  --transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html,body {
+  height: 100%;
+  font-family: var(--font);
+  background: var(--surface);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Page Layout ──────────────────────────────────────────────────────── */
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 0%, rgba(26,86,219,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(14,164,110,0.03) 0%, transparent 60%),
+    var(--surface);
+}
+
+/* ─── Chat Window ──────────────────────────────────────────────────────── */
+.chat-window {
+  width: 100%;
+  max-width: 440px;
+  height: min(700px, 92vh);
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  position: relative;
+  animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes slideUp {
+  from { opacity:0; transform: translateY(24px) scale(0.98); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+/* ─── Header ───────────────────────────────────────────────────────────── */
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  background: var(--white);
+  border-bottom: 1px solid var(--border-soft);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.header-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a56db, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(26,86,219,0.30);
+}
+
+.header-avatar svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: white;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.header-info { flex: 1; min-width: 0; }
+
+.header-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 2px rgba(14,164,110,0.18);
+  animation: pulse-dot 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%,100% { box-shadow: 0 0 0 2px rgba(14,164,110,0.18); }
+  50%      { box-shadow: 0 0 0 4px rgba(14,164,110,0.10); }
+}
+
+.header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+.icon-btn:hover {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+.icon-btn svg {
+  width: 18px; height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ─── Messages Area ─────────────────────────────────────────────────────── */
+.messages-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  scroll-behavior: smooth;
+}
+
+.messages-area::-webkit-scrollbar { width: 4px; }
+.messages-area::-webkit-scrollbar-track { background: transparent; }
+.messages-area::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+/* ─── Date Divider ──────────────────────────────────────────────────────── */
+.date-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 8px;
+}
+.date-divider::before, .date-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-soft);
+}
+.date-divider span {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* ─── Message Bubbles ───────────────────────────────────────────────────── */
+.msg-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  animation: fadeMsg 0.28s ease both;
+  margin-bottom: 2px;
+}
+.msg-row.user { flex-direction: row-reverse; }
+
+@keyframes fadeMsg {
+  from { opacity:0; transform: translateY(8px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+.bot-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a56db, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+.bot-icon svg {
+  width: 14px; height: 14px;
+  stroke: white; fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.msg-col { display: flex; flex-direction: column; max-width: 78%; }
+.msg-row.user .msg-col { align-items: flex-end; }
+
+.bubble {
+  padding: 11px 14px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Assistant bubble */
+.msg-row.assistant .bubble {
+  background: var(--off-white);
+  border: 1px solid var(--border-soft);
+  border-bottom-left-radius: 4px;
+  color: var(--text-primary);
+}
+
+/* User bubble */
+.msg-row.user .bubble {
+  background: var(--accent);
+  color: white;
+  border-bottom-right-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.msg-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  padding: 0 2px;
+}
+
+.msg-time {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+
+.intent-badge {
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 20px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Typing Indicator ──────────────────────────────────────────────────── */
+.typing-row { display: flex; align-items: flex-end; gap: 8px; }
+.typing-bubble {
+  background: var(--off-white);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  border-bottom-left-radius: 4px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: typingPulse 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.18s; }
+.typing-dot:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes typingPulse {
+  0%,60%,100% { transform: translateY(0); opacity: 0.4; }
+  30%          { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ─── Quick Replies ─────────────────────────────────────────────────────── */
+.quick-replies {
+  padding: 10px 16px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.quick-chip {
+  padding: 6px 13px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  font-size: 12.5px;
+  color: var(--text-second);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.quick-chip:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* ─── Input Bar ─────────────────────────────────────────────────────────── */
+.input-bar {
+  padding: 14px 16px;
+  border-top: 1px solid var(--border-soft);
+  background: var(--white);
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.input-wrap {
+  flex: 1;
+  position: relative;
+}
+
+textarea#chat-input {
+  width: 100%;
+  min-height: 44px;
+  max-height: 120px;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--off-white);
+  resize: none;
+  outline: none;
+  transition: var(--transition);
+  line-height: 1.5;
+  display: block;
+}
+textarea#chat-input::placeholder { color: var(--text-muted); }
+textarea#chat-input:focus {
+  border-color: var(--accent);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(26,86,219,0.08);
+}
+
+.send-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(26,86,219,0.28);
+}
+.send-btn:hover { background: var(--accent-hover); transform: scale(1.04); }
+.send-btn:active { transform: scale(0.97); }
+.send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.send-btn svg {
+  width: 18px; height: 18px;
+  stroke: white; fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ─── Language Badge ────────────────────────────────────────────────────── */
+.lang-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--surface);
+  transition: var(--transition);
+  margin: 0 16px 10px;
+  width: fit-content;
+  cursor: default;
+}
+
+/* ─── Empty state ───────────────────────────────────────────────────────── */
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 24px;
+  text-align: center;
+}
+.empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.empty-icon svg {
+  width: 28px; height: 28px;
+  stroke: var(--accent); fill: none;
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+.empty-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.empty-sub {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 260px;
+}
+
+/* ─── LLM indicator ─────────────────────────────────────────────────────── */
+.llm-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  display: inline-block;
+  margin-right: 3px;
+}
+
+/* ─── Toast ─────────────────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--text-primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+  z-index: 999;
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 480px) {
+  .page { padding: 0; align-items: flex-end; }
+  .chat-window {
+    max-width: 100%;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    height: 96vh;
+  }
+}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="chat-window">
+
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-avatar">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </div>
+    <div class="header-info">
+      <div class="header-name">Nexura Assistant</div>
+      <div class="header-status">
+        <span class="status-dot"></span>
+        <span id="status-text">Online · AI-powered</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" title="Clear chat" onclick="clearChat()">
+        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.41"/></svg>
+      </button>
+      <button class="icon-btn" title="Minimize" onclick="toggleMin()">
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="messages-area" id="messages-area">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="empty-title">Hi there! 👋</div>
+      <div class="empty-sub">Ask me anything about your balance, claims, policy, payments, or loans. I speak English, Hindi & Hinglish!</div>
+    </div>
+  </div>
+
+  <!-- Quick Replies -->
+  <div class="quick-replies" id="quick-replies">
+    <button class="quick-chip" onclick="sendQuick('Check my balance')">💰 Balance</button>
+    <button class="quick-chip" onclick="sendQuick('Claim status batao')">📋 Claim</button>
+    <button class="quick-chip" onclick="sendQuick('My policy details')">📄 Policy</button>
+    <button class="quick-chip" onclick="sendQuick('Payout kab milega')">💸 Payout</button>
+    <button class="quick-chip" onclick="sendQuick('Help')">ℹ️ Help</button>
+  </div>
+
+  <!-- Language badge -->
+  <div class="lang-badge" id="lang-badge">
+    <svg width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </svg>
+    <span id="lang-label">Language: Auto-detect</span>
+  </div>
+
+  <!-- Input Bar -->
+  <div class="input-bar">
+    <div class="input-wrap">
+      <textarea id="chat-input"
+        placeholder="Type a message… (English, Hindi, Hinglish)"
+        rows="1"
+        maxlength="1000"
+      ></textarea>
+    </div>
+    <button class="send-btn" id="send-btn" title="Send">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+
+</div><!-- .chat-window -->
+</div><!-- .page -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────
+const API   = '/api/v1/chatbot/message/';
+let sessionId = null;
+let isLoading = false;
+let currentLang = 'en';
+
+const LANG_NAMES = { en: '🇬🇧 English', hi: '🇮🇳 Hindi', gu: '🇮🇳 Gujarati', hi_en: '🇮🇳 Hinglish' };
+
+// ─── Elements ─────────────────────────────────────────────────────────────
+const area     = document.getElementById('messages-area');
+const input    = document.getElementById('chat-input');
+const sendBtn  = document.getElementById('send-btn');
+const emptyEl  = document.getElementById('empty-state');
+const qr       = document.getElementById('quick-replies');
+const langBadge = document.getElementById('lang-label');
+
+// ─── Textarea auto-resize ─────────────────────────────────────────────────
+input.addEventListener('input', () => {
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+});
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+sendBtn.addEventListener('click', sendMessage);
+
+// ─── Send ─────────────────────────────────────────────────────────────────
+async function sendMessage() {
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+
+  hideEmpty();
+  appendMsg('user', text);
+  input.value = '';
+  input.style.height = 'auto';
+  setLoading(true);
+  showTyping();
+
+  try {
+    const res  = await fetch(API, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+      body:    JSON.stringify({ message: text, session_id: sessionId }),
+    });
+    const data = await res.json();
+
+    hideTyping();
+
+    if (!res.ok) {
+      appendMsg('assistant', '⚠️ ' + (data.error || 'Something went wrong. Please try again.'));
+      return;
+    }
+
+    sessionId   = data.session_id;
+    currentLang = data.lang || 'en';
+    updateLangBadge(data.lang, data.meta?.llm_used);
+    appendMsg('assistant', data.response, data.intent, data.meta?.llm_used);
+    updateQuickReplies(data.intent, data.lang);
+
+  } catch(err) {
+    hideTyping();
+    appendMsg('assistant', '⚠️ Network error. Please check your connection.');
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function sendQuick(text) {
+  input.value = text;
+  sendMessage();
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────
+function appendMsg(role, content, intent, llmUsed) {
+  const row = document.createElement('div');
+  row.className = 'msg-row ' + role;
+
+  if (role === 'assistant') {
+    const icon = document.createElement('div');
+    icon.className = 'bot-icon';
+    icon.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+    row.appendChild(icon);
+  }
+
+  const col    = document.createElement('div');
+  col.className = 'msg-col';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = content;
+  col.appendChild(bubble);
+
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+
+  const time = document.createElement('span');
+  time.className = 'msg-time';
+  time.textContent = now();
+  meta.appendChild(time);
+
+  if (intent && intent !== 'unknown' && role === 'assistant') {
+    const badge = document.createElement('span');
+    badge.className = 'intent-badge';
+    badge.textContent = intent.replace(/_/g,' ');
+    meta.appendChild(badge);
+  }
+
+  if (llmUsed) {
+    const dot = document.createElement('span');
+    dot.innerHTML = '<span class="llm-dot" title="AI-generated"></span>';
+    meta.appendChild(dot);
+  }
+
+  col.appendChild(meta);
+  row.appendChild(col);
+  area.appendChild(row);
+  scrollBottom();
+}
+
+let typingEl = null;
+function showTyping() {
+  typingEl = document.createElement('div');
+  typingEl.className = 'typing-row';
+  typingEl.innerHTML = `
+    <div class="bot-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+    <div class="typing-bubble">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>`;
+  area.appendChild(typingEl);
+  scrollBottom();
+}
+function hideTyping() { if (typingEl) { typingEl.remove(); typingEl = null; } }
+
+// ─── Quick Replies ────────────────────────────────────────────────────────
+const QUICK_MAP = {
+  check_balance:      ['📊 Statement', '📄 Policy', '💸 Payout'],
+  check_claim_status: ['📄 Policy', '💸 Payout', '🔧 Problem'],
+  check_policy:       ['💰 Balance', '💳 Make Payment', '🔄 Renew'],
+  make_payment:       ['💰 Balance', '📋 Claim', '📊 Statement'],
+  get_help:           ['💰 Balance', '📋 Claim', '📄 Policy', '💸 Payout'],
+};
+
+const QR_DEFAULTS = [
+  { label: '💰 Balance',    msg: 'Check my balance' },
+  { label: '📋 Claim',      msg: 'Claim status batao' },
+  { label: '📄 Policy',     msg: 'My policy details' },
+  { label: '💸 Payout',     msg: 'Payout kab milega' },
+];
+
+function updateQuickReplies(intent) {
+  const chips = QUICK_MAP[intent];
+  if (!chips) return;
+  qr.innerHTML = '';
+  chips.forEach(label => {
+    const btn = document.createElement('button');
+    btn.className = 'quick-chip';
+    btn.textContent = label;
+    btn.onclick = () => sendQuick(label.replace(/^[^\w]+/, ''));
+    qr.appendChild(btn);
+  });
+}
+
+// ─── Lang Badge ───────────────────────────────────────────────────────────
+function updateLangBadge(lang, llmUsed) {
+  const name = LANG_NAMES[lang] || lang;
+  langBadge.textContent = 'Language: ' + name + (llmUsed ? ' · AI' : '');
+}
+
+// ─── Utilities ────────────────────────────────────────────────────────────
+function now() {
+  return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+}
+function scrollBottom() {
+  requestAnimationFrame(() => { area.scrollTop = area.scrollHeight; });
+}
+function hideEmpty() {
+  if (emptyEl) { emptyEl.style.display = 'none'; }
+}
+function setLoading(v) {
+  isLoading       = v;
+  sendBtn.disabled = v;
+  input.disabled  = v;
+  document.getElementById('status-text').textContent = v ? 'Typing…' : 'Online · AI-powered';
+}
+function getCsrf() {
+  const m = document.cookie.match(/csrftoken=([^;]+)/);
+  return m ? m[1] : '';
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+function clearChat() {
+  area.innerHTML = '';
+  area.appendChild(emptyEl);
+  emptyEl.style.display = '';
+  sessionId = null;
+  currentLang = 'en';
+  langBadge.textContent = 'Language: Auto-detect';
+  // Restore default quick replies
+  qr.innerHTML = QR_DEFAULTS.map(d =>
+    `<button class="quick-chip" onclick="sendQuick('${d.msg}')">${d.label}</button>`
+  ).join('');
+  showToast('Chat cleared');
+}
+function toggleMin() { showToast('Minimised — click the chat icon to restore'); }
+
+// ─── Boot ─────────────────────────────────────────────────────────────────
+// Auto-greet on load
+setTimeout(() => {
+  hideEmpty();
+  appendMsg('assistant',
+    "👋 Hi! I'm Nexura Assistant.\n\nI can help you with your balance, claims, policy, payments, loans — in English, Hindi, or Hinglish!\n\nWhat would you like to know?",
+    'greet', false
+  );
+}, 600);
+</script>
+</body>
+</html>

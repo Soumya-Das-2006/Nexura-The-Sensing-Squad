@@ -1,0 +1,581 @@
+{% load static %}
+{# ── Floating AI Chatbot Widget ─────────────────────────────────────────────── #}
+
+<style>
+/* ─── Floating Chatbot ──────────────────────────────────────────────────────── */
+:root {
+  --cb-accent:       #1a56db;
+  --cb-accent-h:     #1447c0;
+  --cb-accent-light: #e8efff;
+  --cb-success:      #0ea46e;
+  --cb-surface:      #f8f9fb;
+  --cb-border:       #e4e8ef;
+  --cb-border-soft:  #eef0f5;
+  --cb-text:         #0f1623;
+  --cb-text-sec:     #4a5568;
+  --cb-text-muted:   #8a96a8;
+  --cb-white:        #ffffff;
+  --cb-radius-sm:    8px;
+  --cb-radius-md:    14px;
+  --cb-radius-lg:    20px;
+  --cb-radius-xl:    26px;
+  --cb-shadow-lg:    0 12px 40px rgba(0,0,0,0.13), 0 4px 12px rgba(0,0,0,0.07);
+  --cb-shadow-xl:    0 24px 64px rgba(0,0,0,0.15), 0 8px 20px rgba(0,0,0,0.08);
+  --cb-font:         'DM Sans', system-ui, sans-serif;
+  --cb-transition:   all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Launcher Button ──────────────────────────────────────────────────────── */
+#cb-launcher {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 91000;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #1a56db 0%, #3b82f6 100%);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(26,86,219,0.42), 0 2px 6px rgba(0,0,0,0.12);
+  transition: var(--cb-transition);
+  outline: none;
+  animation: cb-pop-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+#cb-launcher:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(26,86,219,0.52), 0 2px 8px rgba(0,0,0,0.14);
+}
+#cb-launcher:active { transform: scale(0.96); }
+#cb-launcher svg { transition: var(--cb-transition); }
+#cb-launcher.open .cb-icon-chat { opacity: 0; transform: scale(0.6) rotate(15deg); }
+#cb-launcher.open .cb-icon-close { opacity: 1; transform: scale(1) rotate(0deg); }
+#cb-launcher .cb-icon-chat  { position: absolute; transition: var(--cb-transition); }
+#cb-launcher .cb-icon-close { position: absolute; opacity: 0; transform: scale(0.6) rotate(-15deg); transition: var(--cb-transition); }
+
+/* Notification dot */
+#cb-notif-dot {
+  position: absolute;
+  top: 2px; right: 2px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2.5px solid white;
+  display: none;
+  animation: cb-pulse-dot 2s ease-in-out infinite;
+}
+#cb-notif-dot.show { display: block; }
+
+@keyframes cb-pulse-dot {
+  0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+  50%      { box-shadow: 0 0 0 5px rgba(239,68,68,0); }
+}
+@keyframes cb-pop-in {
+  from { opacity:0; transform: scale(0.5) translateY(20px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+
+/* ─── Chat Panel ───────────────────────────────────────────────────────────── */
+#cb-panel {
+  position: fixed;
+  bottom: 100px;
+  right: 28px;
+  z-index: 90999;
+  width: 380px;
+  height: 530px;
+  background: var(--cb-white);
+  border-radius: var(--cb-radius-xl);
+  box-shadow: var(--cb-shadow-xl);
+  border: 1px solid var(--cb-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform-origin: bottom right;
+  transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), opacity 0.22s ease;
+  transform: scale(0.88) translateY(16px);
+  opacity: 0;
+  pointer-events: none;
+}
+#cb-panel.open {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ─── Panel Header ─────────────────────────────────────────────────────────── */
+#cb-header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #1a56db 0%, #2563eb 100%);
+  flex-shrink: 0;
+}
+.cb-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  backdrop-filter: blur(6px);
+}
+.cb-avatar svg {
+  width: 20px; height: 20px;
+  stroke: white; fill: none;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.cb-header-info { flex: 1; min-width: 0; }
+.cb-title {
+  font-size: 14px; font-weight: 600;
+  color: white; letter-spacing: -0.01em;
+  font-family: var(--cb-font);
+}
+.cb-status {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11.5px; color: rgba(255,255,255,0.75);
+  margin-top: 1px; font-family: var(--cb-font);
+}
+.cb-status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 2px rgba(74,222,128,0.25);
+  animation: cb-pulse-green 2.4s ease-in-out infinite;
+}
+@keyframes cb-pulse-green {
+  0%,100% { box-shadow: 0 0 0 2px rgba(74,222,128,0.25); }
+  50%      { box-shadow: 0 0 0 4px rgba(74,222,128,0.10); }
+}
+.cb-header-close {
+  width: 28px; height: 28px;
+  border: none; background: rgba(255,255,255,0.15);
+  border-radius: var(--cb-radius-sm);
+  color: white; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--cb-transition); flex-shrink: 0;
+}
+.cb-header-close:hover { background: rgba(255,255,255,0.28); }
+.cb-header-close svg {
+  width: 15px; height: 15px;
+  stroke: white; fill: none;
+  stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ─── Messages ─────────────────────────────────────────────────────────────── */
+#cb-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 12px;
+  display: flex; flex-direction: column; gap: 3px;
+  scroll-behavior: smooth;
+  background: var(--cb-surface);
+}
+#cb-messages::-webkit-scrollbar { width: 3px; }
+#cb-messages::-webkit-scrollbar-thumb { background: var(--cb-border); border-radius: 3px; }
+
+.cb-msg-row {
+  display: flex; align-items: flex-end; gap: 7px;
+  animation: cb-fade-msg 0.26s ease both;
+  margin-bottom: 2px;
+}
+.cb-msg-row.user { flex-direction: row-reverse; }
+@keyframes cb-fade-msg {
+  from { opacity:0; transform: translateY(6px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+.cb-bot-icon {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: linear-gradient(135deg, #1a56db, #3b82f6);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-bottom: 2px;
+}
+.cb-bot-icon svg {
+  width: 12px; height: 12px;
+  stroke: white; fill: none; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+.cb-msg-col { display: flex; flex-direction: column; max-width: 80%; }
+.cb-msg-row.user .cb-msg-col { align-items: flex-end; }
+
+.cb-bubble {
+  padding: 9px 12px;
+  border-radius: var(--cb-radius-md);
+  font-size: 13.5px; line-height: 1.5;
+  font-family: var(--cb-font);
+  word-break: break-word; white-space: pre-wrap;
+}
+.cb-msg-row.assistant .cb-bubble {
+  background: var(--cb-white);
+  border: 1px solid var(--cb-border-soft);
+  border-bottom-left-radius: 4px;
+  color: var(--cb-text);
+}
+.cb-msg-row.user .cb-bubble {
+  background: var(--cb-accent);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.cb-msg-time {
+  font-size: 10px; color: var(--cb-text-muted);
+  margin-top: 3px; padding: 0 2px;
+}
+
+/* Typing */
+.cb-typing-row { display: flex; align-items: flex-end; gap: 7px; }
+.cb-typing-bubble {
+  background: var(--cb-white);
+  border: 1px solid var(--cb-border-soft);
+  border-radius: var(--cb-radius-md);
+  border-bottom-left-radius: 4px;
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 4px;
+}
+.cb-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--cb-text-muted);
+  animation: cb-typing 1.4s ease-in-out infinite;
+}
+.cb-dot:nth-child(2) { animation-delay: 0.18s; }
+.cb-dot:nth-child(3) { animation-delay: 0.36s; }
+@keyframes cb-typing {
+  0%,60%,100% { transform: translateY(0); opacity: 0.4; }
+  30%          { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ─── Quick chips ──────────────────────────────────────────────────────────── */
+#cb-quick-chips {
+  padding: 8px 12px 0;
+  display: flex; flex-wrap: wrap; gap: 6px;
+  background: var(--cb-surface);
+}
+.cb-chip {
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1.5px solid var(--cb-border);
+  background: var(--cb-white);
+  font-size: 12px; color: var(--cb-text-sec);
+  cursor: pointer; font-family: var(--cb-font);
+  transition: var(--cb-transition); white-space: nowrap;
+}
+.cb-chip:hover {
+  border-color: var(--cb-accent);
+  background: var(--cb-accent-light);
+  color: var(--cb-accent);
+  transform: translateY(-1px);
+}
+
+/* ─── Input bar ────────────────────────────────────────────────────────────── */
+#cb-input-bar {
+  padding: 11px 12px;
+  border-top: 1px solid var(--cb-border-soft);
+  background: var(--cb-white);
+  display: flex; align-items: flex-end; gap: 8px; flex-shrink: 0;
+}
+#cb-textarea {
+  flex: 1;
+  min-height: 38px; max-height: 100px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--cb-border);
+  border-radius: var(--cb-radius-md);
+  font-family: var(--cb-font); font-size: 13.5px;
+  color: var(--cb-text); background: var(--cb-surface);
+  resize: none; outline: none;
+  transition: var(--cb-transition); line-height: 1.45;
+}
+#cb-textarea::placeholder { color: var(--cb-text-muted); }
+#cb-textarea:focus {
+  border-color: var(--cb-accent);
+  background: var(--cb-white);
+  box-shadow: 0 0 0 3px rgba(26,86,219,0.08);
+}
+#cb-send {
+  width: 38px; height: 38px;
+  border-radius: var(--cb-radius-md);
+  border: none; background: var(--cb-accent);
+  color: white; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--cb-transition); flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(26,86,219,0.28);
+}
+#cb-send:hover { background: var(--cb-accent-h); transform: scale(1.05); }
+#cb-send:active { transform: scale(0.97); }
+#cb-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+#cb-send svg {
+  width: 16px; height: 16px;
+  stroke: white; fill: none; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ─── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  #cb-panel {
+    width: calc(100vw - 16px);
+    right: 8px; bottom: 90px;
+    height: 70vh;
+    border-radius: var(--cb-radius-xl) var(--cb-radius-xl) var(--cb-radius-lg) var(--cb-radius-lg);
+  }
+  #cb-launcher { bottom: 18px; right: 18px; }
+}
+</style>
+
+{# ── Launcher button ── #}
+<button id="cb-launcher" aria-label="Open AI assistant chat" title="Chat with Nexura AI">
+  <span id="cb-notif-dot" aria-hidden="true"></span>
+
+  <span class="cb-icon-chat" aria-hidden="true">
+    <svg width="26" height="26" viewBox="0 0 24 24" stroke="white" fill="none"
+         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  </span>
+
+  <span class="cb-icon-close" aria-hidden="true">
+    <svg width="22" height="22" viewBox="0 0 24 24" stroke="white" fill="none"
+         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </span>
+</button>
+
+{# ── Chat panel ── #}
+<div id="cb-panel" role="dialog" aria-modal="true" aria-label="Nexura AI chat assistant">
+
+  {# Header #}
+  <div id="cb-header">
+    <div class="cb-avatar">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </div>
+    <div class="cb-header-info">
+      <div class="cb-title">Nexura Assistant</div>
+      <div class="cb-status">
+        <span class="cb-status-dot"></span>
+        <span id="cb-status-text">Online · AI-powered</span>
+      </div>
+    </div>
+    <button class="cb-header-close" onclick="cbClose()" aria-label="Close chat">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  {# Messages #}
+  <div id="cb-messages" role="log" aria-live="polite" aria-label="Chat messages"></div>
+
+  {# Quick chips #}
+  <div id="cb-quick-chips">
+    <button class="cb-chip" onclick="cbSendQuick('Check my balance')">💰 Balance</button>
+    <button class="cb-chip" onclick="cbSendQuick('Claim status')">📋 Claim</button>
+    <button class="cb-chip" onclick="cbSendQuick('My policy details')">📄 Policy</button>
+    <button class="cb-chip" onclick="cbSendQuick('Payout kab milega')">💸 Payout</button>
+  </div>
+
+  {# Input #}
+  <div id="cb-input-bar">
+    <textarea id="cb-textarea" rows="1"
+              placeholder="Ask anything… (English, Hindi, Hinglish)"
+              maxlength="1000" aria-label="Type your message"></textarea>
+    <button id="cb-send" aria-label="Send message">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const CB_API     = '/api/v1/chatbot/message/';
+  const launcher   = document.getElementById('cb-launcher');
+  const panel      = document.getElementById('cb-panel');
+  const textarea   = document.getElementById('cb-textarea');
+  const sendBtn    = document.getElementById('cb-send');
+  const messages   = document.getElementById('cb-messages');
+  const notifDot   = document.getElementById('cb-notif-dot');
+  const statusText = document.getElementById('cb-status-text');
+
+  let sessionId  = null;
+  let isLoading  = false;
+  let isOpen     = false;
+  let greeted    = false;
+
+  // ── Open / Close ──────────────────────────────────────────────────────────
+  function cbOpen() {
+    isOpen = true;
+    panel.classList.add('open');
+    launcher.classList.add('open');
+    launcher.setAttribute('aria-expanded', 'true');
+    notifDot.classList.remove('show');
+    textarea.focus();
+    if (!greeted) { greeted = true; greet(); }
+  }
+  function cbClose() {
+    isOpen = false;
+    panel.classList.remove('open');
+    launcher.classList.remove('open');
+    launcher.setAttribute('aria-expanded', 'false');
+  }
+  window.cbClose = cbClose;
+
+  launcher.addEventListener('click', () => isOpen ? cbClose() : cbOpen());
+
+  // ── Auto-resize textarea ──────────────────────────────────────────────────
+  textarea.addEventListener('input', () => {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+  });
+  textarea.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); cbSend(); }
+  });
+  sendBtn.addEventListener('click', cbSend);
+
+  // ── Greet ─────────────────────────────────────────────────────────────────
+  function greet() {
+    setTimeout(() => {
+      cbAppend('assistant',
+        "👋 Hi! I'm Nexura Assistant.\n\nAsk me about your balance, claims, policy, payments, or loans — in English, Hindi, or Hinglish!",
+        false
+      );
+    }, 350);
+  }
+
+  // ── Send ──────────────────────────────────────────────────────────────────
+  async function cbSend() {
+    const text = textarea.value.trim();
+    if (!text || isLoading) return;
+
+    cbAppend('user', text, false);
+    textarea.value = '';
+    textarea.style.height = 'auto';
+    cbSetLoading(true);
+    const typingEl = cbShowTyping();
+
+    try {
+      const res  = await fetch(CB_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': cbCsrf(),
+        },
+        body: JSON.stringify({ message: text, session_id: sessionId }),
+      });
+      const data = await res.json();
+      typingEl.remove();
+
+      if (!res.ok) {
+        cbAppend('assistant', '⚠️ ' + (data.error || 'Something went wrong. Please try again.'));
+        return;
+      }
+
+      sessionId = data.session_id;
+      cbAppend('assistant', data.response, data.meta && data.meta.llm_used);
+      cbUpdateChips(data.intent);
+
+    } catch (err) {
+      typingEl.remove();
+      cbAppend('assistant', '⚠️ Network error. Please check your connection.');
+      console.error('[Nexura Chatbot]', err);
+    } finally {
+      cbSetLoading(false);
+    }
+  }
+
+  function cbSendQuick(text) {
+    textarea.value = text;
+    cbSend();
+  }
+  window.cbSendQuick = cbSendQuick;
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  function cbAppend(role, content, llmUsed) {
+    const row = document.createElement('div');
+    row.className = 'cb-msg-row ' + role;
+
+    if (role === 'assistant') {
+      const icon = document.createElement('div');
+      icon.className = 'cb-bot-icon';
+      icon.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+      row.appendChild(icon);
+    }
+
+    const col    = document.createElement('div');
+    col.className = 'cb-msg-col';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'cb-bubble';
+    bubble.textContent = content;
+    col.appendChild(bubble);
+
+    const time = document.createElement('div');
+    time.className = 'cb-msg-time';
+    time.textContent = cbNow();
+    col.appendChild(time);
+
+    row.appendChild(col);
+    messages.appendChild(row);
+    cbScroll();
+  }
+
+  function cbShowTyping() {
+    const row = document.createElement('div');
+    row.className = 'cb-typing-row';
+    row.innerHTML = `
+      <div class="cb-bot-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+      <div class="cb-typing-bubble">
+        <div class="cb-dot"></div><div class="cb-dot"></div><div class="cb-dot"></div>
+      </div>`;
+    messages.appendChild(row);
+    cbScroll();
+    return row;
+  }
+
+  const CHIP_MAP = {
+    check_balance:      ['📋 Claim status', '📄 My policy', '💸 Payout kab milega'],
+    check_claim_status: ['📄 My policy', '💸 Payout kab milega', 'Check my balance'],
+    check_policy:       ['💰 Check my balance', '💳 Make payment', '📋 Claim status'],
+    make_payment:       ['💰 Balance', '📋 Claim status', '📄 My policy'],
+    get_help:           ['💰 Check my balance', '📋 Claim status', '📄 My policy'],
+  };
+  function cbUpdateChips(intent) {
+    const chips = CHIP_MAP[intent];
+    if (!chips) return;
+    const box = document.getElementById('cb-quick-chips');
+    box.innerHTML = '';
+    chips.forEach(label => {
+      const btn = document.createElement('button');
+      btn.className = 'cb-chip';
+      btn.textContent = label;
+      btn.onclick = () => cbSendQuick(label.replace(/^[^\w]+/, ''));
+      box.appendChild(btn);
+    });
+  }
+
+  // ── Utilities ─────────────────────────────────────────────────────────────
+  function cbScroll() {
+    requestAnimationFrame(() => { messages.scrollTop = messages.scrollHeight; });
+  }
+  function cbNow() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  function cbCsrf() {
+    const m = document.cookie.match(/csrftoken=([^;]+)/);
+    return m ? m[1] : '';
+  }
+  function cbSetLoading(v) {
+    isLoading = v;
+    sendBtn.disabled = v;
+    textarea.disabled = v;
+    statusText.textContent = v ? 'Typing…' : 'Online · AI-powered';
+  }
+
+  // ── Show notification dot after 3 s if not opened ─────────────────────────
+  setTimeout(() => {
+    if (!isOpen) notifDot.classList.add('show');
+  }, 3000);
+
+})();
+</script>
