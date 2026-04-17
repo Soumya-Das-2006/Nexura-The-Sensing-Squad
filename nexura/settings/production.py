@@ -10,7 +10,11 @@ SECURE_SSL_REDIRECT            = True
 SESSION_COOKIE_SECURE          = True
 CSRF_COOKIE_SECURE             = True
 
-# Logging to file
+# Ensure logs directory exists
+_log_dir = BASE_DIR / 'logs'
+_log_dir.mkdir(exist_ok=True)
+
+# Logging to file + console
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -23,7 +27,14 @@ LOGGING = {
     'handlers': {
         'file': {
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'nexura.log',
+            'filename': _log_dir / 'nexura.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'triggers_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': _log_dir / 'triggers.log',
             'maxBytes': 1024 * 1024 * 10,  # 10 MB
             'backupCount': 5,
             'formatter': 'verbose',
@@ -34,9 +45,15 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django': {'handlers': ['file', 'console'], 'level': 'WARNING'},
-        'apps':   {'handlers': ['file', 'console'], 'level': 'INFO', 'propagate': False},
-        'celery': {'handlers': ['file', 'console'], 'level': 'INFO'},
+        'django':        {'handlers': ['file', 'console'], 'level': 'WARNING'},
+        'apps':          {'handlers': ['file', 'console'], 'level': 'INFO', 'propagate': False},
+        'apps.triggers': {
+            'handlers': ['triggers_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'celery':        {'handlers': ['file', 'console'], 'level': 'INFO'},
     },
 }
+
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

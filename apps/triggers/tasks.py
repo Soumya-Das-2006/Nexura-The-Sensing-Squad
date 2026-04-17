@@ -9,16 +9,16 @@ Schedule (defined in settings.CELERY_BEAT_SCHEDULE):
   poll_platform_uptime     → every 10 minutes
 
 Each task:
-  1. Fetches live data from the external API (or mocked response in dev)
+  1. Delegates API calls to the services layer (services/)
   2. Runs threshold evaluation (thresholds.py)
   3. Creates a DisruptionEvent if a threshold is breached
   4. Queues the claim-generation task (apps.claims.tasks.process_pending_claims)
      by setting claims_generated=False on the new event
 """
 import logging
-import requests
 from datetime import datetime, timedelta
 
+import requests
 from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
@@ -26,6 +26,8 @@ from django.utils import timezone
 from apps.zones.models import Zone
 from .models import DisruptionEvent
 from .thresholds import evaluate_rain, evaluate_heat, evaluate_aqi, evaluate_platform_downtime
+from .services.weather import WeatherService, WeatherAPIError
+from .services.aqi import AQIService, AQIAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -69,34 +71,37 @@ def _create_event(zone, trigger_type, severity, threshold, is_full,
 
 # ─── Task 1: Weather polling (rain + heat) ────────────────────────────────────
 
-@shared_task(name='apps.triggers.tasks.poll_weather_all_zones', bind=True, max_retries=3)
+@shared_task(
+    name='apps.triggers.tasks.poll_weather_all_zones',
+    bind=True,
+    max_retries=3,
+    autoretry_for=(WeatherAPIError,),
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+    acks_late=True,
+    soft_time_limit=120,
+    time_limit=180,
+)
 def poll_weather_all_zones(self):
     """
     Poll OpenWeatherMap for all active zones every 15 minutes.
     Evaluates heavy_rain and extreme_heat triggers.
-    """
-    api_key = settings.OPENWEATHER_API_KEY
-    zones   = Zone.objects.filter(active=True)
 
+    Auto-retries on WeatherAPIError with exponential backoff.
+    """
+    weather_service = WeatherService()
+    zones = Zone.objects.filter(active=True)
     triggered = 0
+    errors = 0
 
     for zone in zones:
         try:
-            if not api_key:
-                # ── MOCK for dev/test ─────────────────────────────────────
-                data = _mock_weather(zone)
-            else:
-                url = (
-                    f"https://api.openweathermap.org/data/2.5/weather"
-                    f"?lat={zone.lat}&lon={zone.lng}"
-                    f"&appid={api_key}&units=metric"
-                )
-                resp = requests.get(url, timeout=10)
-                resp.raise_for_status()
-                data = resp.json()
+            weather_data = weather_service.fetch_weather(zone)
 
-            rain_mm   = data.get('rain', {}).get('1h', 0.0)
-            temp_c    = data.get('main', {}).get('temp', 25.0)
+            rain_mm = weather_data.rain_mm
+            temp_c = weather_data.temp_c
+            raw = weather_data.raw_payload
 
             # ── Rain check ────────────────────────────────────────────────
             is_trig, is_full, sev = evaluate_rain(rain_mm)
@@ -104,7 +109,7 @@ def poll_weather_all_zones(self):
                 _create_event(
                     zone, 'heavy_rain', sev,
                     threshold=35.0, is_full=is_full,
-                    source_api='openweathermap', raw_payload=data,
+                    source_api='openweathermap', raw_payload=raw,
                 )
                 triggered += 1
 
@@ -114,68 +119,116 @@ def poll_weather_all_zones(self):
                 _create_event(
                     zone, 'extreme_heat', sev,
                     threshold=42.0, is_full=is_full,
-                    source_api='openweathermap', raw_payload=data,
+                    source_api='openweathermap', raw_payload=raw,
                 )
                 triggered += 1
 
-        except requests.RequestException as exc:
-            logger.warning("[poll_weather] Zone %s — API error: %s", zone, exc)
-        except Exception as exc:
-            logger.error("[poll_weather] Zone %s — unexpected error: %s", zone, exc, exc_info=True)
+            logger.debug(
+                "[poll_weather] zone=%s rain=%.1fmm temp=%.1f°C",
+                zone, rain_mm, temp_c,
+            )
 
-    logger.info("[poll_weather] Checked %d zones — %d triggers created.", zones.count(), triggered)
-    return {'zones_checked': zones.count(), 'triggers_created': triggered}
+        except WeatherAPIError as exc:
+            errors += 1
+            logger.warning(
+                "[poll_weather] Zone %s — weather API error (zone skipped): %s",
+                zone, exc,
+            )
+            # Continue to next zone — don't let one zone failure abort the batch
+
+        except Exception as exc:
+            errors += 1
+            logger.error(
+                "[poll_weather] Zone %s — unexpected error: %s",
+                zone, exc, exc_info=True,
+            )
+
+    logger.info(
+        "[poll_weather] Completed: zones_checked=%d triggers_created=%d errors=%d",
+        zones.count(), triggered, errors,
+    )
+    return {
+        'zones_checked': zones.count(),
+        'triggers_created': triggered,
+        'errors': errors,
+    }
 
 
 # ─── Task 2: AQI polling ──────────────────────────────────────────────────────
 
-@shared_task(name='apps.triggers.tasks.poll_aqi_all_zones', bind=True, max_retries=3)
+@shared_task(
+    name='apps.triggers.tasks.poll_aqi_all_zones',
+    bind=True,
+    max_retries=3,
+    autoretry_for=(AQIAPIError,),
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+    acks_late=True,
+    soft_time_limit=120,
+    time_limit=180,
+)
 def poll_aqi_all_zones(self):
     """
     Poll WAQI for all active zones every 30 minutes.
     Evaluates severe_aqi trigger.
+
+    Auto-retries on AQIAPIError with exponential backoff.
     """
-    api_key = settings.WAQI_API_KEY
-    zones   = Zone.objects.filter(active=True)
+    aqi_service = AQIService()
+    zones = Zone.objects.filter(active=True)
     triggered = 0
+    errors = 0
 
     for zone in zones:
         try:
-            if not api_key:
-                data = _mock_aqi(zone)
-                aqi  = data.get('aqi', 0)
-            else:
-                url = (
-                    f"https://api.waqi.info/feed/geo:{zone.lat};{zone.lng}/"
-                    f"?token={api_key}"
-                )
-                resp = requests.get(url, timeout=10)
-                resp.raise_for_status()
-                data = resp.json()
-                aqi  = data.get('data', {}).get('aqi', 0)
+            aqi_data = aqi_service.fetch_aqi(zone)
+            aqi_value = aqi_data.aqi_value
+            raw = aqi_data.raw_payload
 
-            is_trig, is_full, sev = evaluate_aqi(float(aqi))
+            is_trig, is_full, sev = evaluate_aqi(aqi_value)
             if is_trig and not _event_already_open(zone, 'severe_aqi', within_minutes=90):
                 _create_event(
                     zone, 'severe_aqi', sev,
                     threshold=300.0, is_full=is_full,
-                    source_api='waqi', raw_payload=data,
+                    source_api='waqi', raw_payload=raw,
                 )
                 triggered += 1
 
-        except requests.RequestException as exc:
-            logger.warning("[poll_aqi] Zone %s — API error: %s", zone, exc)
-        except Exception as exc:
-            logger.error("[poll_aqi] Zone %s — unexpected error: %s", zone, exc, exc_info=True)
+            logger.debug(
+                "[poll_aqi] zone=%s aqi=%.0f",
+                zone, aqi_value,
+            )
 
-    logger.info("[poll_aqi] Checked %d zones — %d triggers created.", zones.count(), triggered)
-    return {'zones_checked': zones.count(), 'triggers_created': triggered}
+        except AQIAPIError as exc:
+            errors += 1
+            logger.warning(
+                "[poll_aqi] Zone %s — AQI API error (zone skipped): %s",
+                zone, exc,
+            )
+
+        except Exception as exc:
+            errors += 1
+            logger.error(
+                "[poll_aqi] Zone %s — unexpected error: %s",
+                zone, exc, exc_info=True,
+            )
+
+    logger.info(
+        "[poll_aqi] Completed: zones_checked=%d triggers_created=%d errors=%d",
+        zones.count(), triggered, errors,
+    )
+    return {
+        'zones_checked': zones.count(),
+        'triggers_created': triggered,
+        'errors': errors,
+    }
 
 
 # ─── Task 3: Platform uptime polling ─────────────────────────────────────────
 
-# Track when each platform first went down (in-memory — resets on worker restart)
-_platform_down_since: dict[str, datetime] = {}
+from .models import PlatformDowntimeState
+from .services.uptime import UptimeService
 
 PLATFORM_STATUS_URLS = {
     'zomato':  'https://www.zomato.com/robots.txt',
@@ -187,33 +240,41 @@ PLATFORM_STATUS_URLS = {
 }
 
 
-@shared_task(name='apps.triggers.tasks.poll_platform_uptime', bind=True, max_retries=2)
+@shared_task(
+    name='apps.triggers.tasks.poll_platform_uptime',
+    bind=True,
+    max_retries=2,
+    acks_late=True,
+    soft_time_limit=120,
+    time_limit=180,
+)
 def poll_platform_uptime(self):
     """
     Ping each delivery platform's URL every 10 minutes.
     Creates a platform_down DisruptionEvent for ALL active zones
     when a platform has been unreachable for > 30 minutes.
+    Uses persistent database storage for multi-worker safety.
     """
     triggered = 0
     zones     = Zone.objects.filter(active=True)
     now       = timezone.now()
+    uptime_svc = UptimeService()
 
     for platform, url in PLATFORM_STATUS_URLS.items():
-        is_down = False
-        try:
-            resp = requests.get(url, timeout=8, allow_redirects=True)
-            if resp.status_code >= 500:
-                is_down = True
-        except requests.RequestException:
-            is_down = True
+        is_down = uptime_svc.check_is_down(platform, url)
 
         if is_down:
-            if platform not in _platform_down_since:
-                _platform_down_since[platform] = now
+            # Get or create persistent downtime record
+            state, created = PlatformDowntimeState.objects.get_or_create(
+                platform_name=platform,
+                is_deleted=False,
+                defaults={'down_since': now}
+            )
+
+            if created:
                 logger.info("[platform_uptime] %s went down at %s", platform, now)
 
-            down_since  = _platform_down_since[platform]
-            minutes_down = (now - down_since).total_seconds() / 60
+            minutes_down = (now - state.down_since).total_seconds() / 60
 
             is_trig, is_full, sev = evaluate_platform_downtime(minutes_down)
             if is_trig:
@@ -229,10 +290,16 @@ def poll_platform_uptime(self):
                         )
                         triggered += 1
         else:
-            # Platform recovered — close open events
-            if platform in _platform_down_since:
+            # Platform recovered — close open events and soft-delete states
+            active_states = PlatformDowntimeState.objects.filter(
+                platform_name=platform, 
+                is_deleted=False
+            )
+            
+            if active_states.exists():
                 logger.info("[platform_uptime] %s recovered.", platform)
-                del _platform_down_since[platform]
+                for state in active_states:
+                    state.soft_delete()
 
                 DisruptionEvent.objects.filter(
                     trigger_type='platform_down',
@@ -276,38 +343,13 @@ def create_manual_event(zone_id: int, trigger_type: str,
     )
 
     # Immediately queue claim generation
-    from apps.claims.tasks import process_pending_claims
-    process_pending_claims.delay()
+    try:
+        from apps.claims.tasks import process_pending_claims
+        process_pending_claims.delay()
+    except Exception as exc:
+        logger.error(
+            "[create_manual_event] Failed to queue claim generation: %s",
+            exc, exc_info=True,
+        )
 
     return {'event_id': event.pk, 'zone': str(zone), 'trigger_type': trigger_type}
-
-
-# ─── Mock data helpers (dev / OTP_TEST_MODE) ─────────────────────────────────
-
-def _mock_weather(zone) -> dict:
-    """Return realistic mock weather data for a zone based on city."""
-    city_mocks = {
-        'Mumbai':    {'rain': {'1h': 38.5}, 'main': {'temp': 29.0}},  # triggers rain
-        'Delhi':     {'rain': {'1h': 2.0},  'main': {'temp': 44.5}},  # triggers heat
-        'Bangalore': {'rain': {'1h': 5.0},  'main': {'temp': 27.0}},
-        'Chennai':   {'rain': {'1h': 12.0}, 'main': {'temp': 36.0}},
-        'Hyderabad': {'rain': {'1h': 8.0},  'main': {'temp': 39.5}},
-        'Kolkata':   {'rain': {'1h': 22.0}, 'main': {'temp': 32.0}},  # partial rain
-        'Pune':      {'rain': {'1h': 3.0},  'main': {'temp': 31.0}},
-    }
-    return city_mocks.get(zone.city, {'rain': {'1h': 0.0}, 'main': {'temp': 28.0}})
-
-
-def _mock_aqi(zone) -> dict:
-    """Return realistic mock AQI data for a zone based on city."""
-    city_mocks = {
-        'Delhi':     {'aqi': 325},   # triggers full AQI
-        'Mumbai':    {'aqi': 155},
-        'Kolkata':   {'aqi': 215},   # partial AQI
-        'Bangalore': {'aqi': 85},
-        'Chennai':   {'aqi': 110},
-        'Hyderabad': {'aqi': 130},
-        'Pune':      {'aqi': 95},
-    }
-    aqi = city_mocks.get(zone.city, {'aqi': 80})['aqi']
-    return {'data': {'aqi': aqi, 'city': {'name': zone.city}}}

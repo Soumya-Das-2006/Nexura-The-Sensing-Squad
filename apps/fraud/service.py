@@ -236,6 +236,84 @@ def _layer5_routing(claim, score: float, flags: list) -> str:
         return 'approve'
 
 
+# ── Fraud Pipeline Wrapper & Router ──────────────────────────────────────────
+
+def process_claim_pipeline(claim):
+    """
+    Validates claim, runs fraud pipeline, updates claim status,
+    and queues payouts/notifications.
+    """
+    logger.info("[process_claim_pipeline] Starting pipeline for Claim #%s", claim.pk)
+
+    # 1. Validation
+    if not claim.policy or claim.payout_amount <= 0:
+        logger.error("[process_claim_pipeline] Claim #%s failed pre-validation", claim.pk)
+        claim.status = 'rejected'
+        claim.rejection_reason = 'Invalid claim parameters.'
+        claim.save(update_fields=['status', 'rejection_reason', 'updated_at'])
+        _notify_worker(claim, 'claim_rejected')
+        return
+
+    # 2. Run Pipeline
+    try:
+        result = run_fraud_pipeline(claim)
+    except Exception as e:
+        logger.error("[process_claim_pipeline] Pipeline crashed for Claim #%s: %s", claim.pk, e, exc_info=True)
+        # Fail safe
+        claim.status = 'on_hold'
+        claim.save(update_fields=['status', 'updated_at'])
+        _notify_worker(claim, 'claim_under_review')
+        return
+
+    claim.fraud_score = result['fraud_score']
+    claim.fraud_flags = result['flags']
+    decision = result['decision']
+
+    # 3. Route based on decision
+    if decision == 'approve':
+        claim.status = 'approved'
+        claim.save(update_fields=['status', 'fraud_score', 'fraud_flags', 'updated_at'])
+        logger.info("[pipeline] Claim #%s → APPROVED (score=%.3f)", claim.pk, claim.fraud_score)
+        _queue_payout(claim)
+        _notify_worker(claim, 'claim_approved')
+
+    elif decision == 'hold':
+        claim.status = 'on_hold'
+        claim.save(update_fields=['status', 'fraud_score', 'fraud_flags', 'updated_at'])
+        logger.info("[pipeline] Claim #%s → ON HOLD (score=%.3f)", claim.pk, claim.fraud_score)
+        _notify_worker(claim, 'claim_under_review')
+
+    elif decision == 'reject':
+        claim.status           = 'rejected'
+        claim.rejection_reason = result.get('rejection_reason', 'Fraud detection flagged this claim.')
+        claim.save(update_fields=[
+            'status', 'fraud_score', 'fraud_flags', 'rejection_reason', 'updated_at'
+        ])
+        logger.info("[pipeline] Claim #%s → REJECTED (score=%.3f)", claim.pk, claim.fraud_score)
+        _notify_worker(claim, 'claim_rejected')
+
+
+def _queue_payout(claim):
+    """Queue the payout disbursement task."""
+    try:
+        from apps.payouts.tasks import disburse_payout
+        disburse_payout.delay(claim.pk)
+    except Exception as e:
+        logger.error("[process_claims] Could not queue payout for claim %s: %s", claim.pk, e)
+
+
+def _notify_worker(claim, event_type: str):
+    """Queue a WhatsApp / email notification to the worker."""
+    try:
+        from apps.notifications.tasks import send_claim_notification
+        send_claim_notification.delay(claim.pk, event_type)
+    except Exception as e:
+        logger.warning(
+            "[process_claims] Could not queue %s notification for claim %s: %s",
+            event_type, claim.pk, e,
+        )
+
+
 # ── FraudFlag DB writer ───────────────────────────────────────────────────────
 
 def _write_flag_records(claim, flags: list):
@@ -243,20 +321,24 @@ def _write_flag_records(claim, flags: list):
     Persist each flag as a FraudFlag model instance.
     Skips if records already exist for this claim (idempotent).
     """
-    if FraudFlag.objects.filter(claim=claim).exists():
-        return
+    try:
+        existing_flags = FraudFlag.objects.filter(claim=claim, is_deleted=False)
+        for existing in existing_flags:
+            existing.soft_delete()
 
-    records = []
-    for f in flags:
-        records.append(FraudFlag(
-            claim             = claim,
-            layer             = f.get('layer', 0),
-            flag_type         = f.get('flag', 'heuristic')[:30],
-            score_contribution = f.get('score_contribution', 0.0),
-            detail            = f.get('detail', ''),
-        ))
-    if records:
-        FraudFlag.objects.bulk_create(records, ignore_conflicts=True)
+        records = []
+        for f in flags:
+            records.append(FraudFlag(
+                claim             = claim,
+                layer             = f.get('layer', 0),
+                flag_type         = f.get('flag', 'heuristic')[:30],
+                score_contribution = f.get('score_contribution', 0.0),
+                detail            = f.get('detail', ''),
+            ))
+        if records:
+            FraudFlag.objects.bulk_create(records, ignore_conflicts=True)
+    except Exception as e:
+        logger.error("[FraudFlag] Failed to write flag records for claim %s: %s", claim.pk, e, exc_info=True)
 
 
 # ── Heuristic fallback ────────────────────────────────────────────────────────

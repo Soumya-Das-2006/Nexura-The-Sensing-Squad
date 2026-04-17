@@ -200,6 +200,17 @@ CELERY_TIMEZONE           = 'Asia/Kolkata'
 CELERY_BEAT_SCHEDULER     = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_TASK_ALWAYS_EAGER  = False
 
+# ─── Celery Production Hardening ──────────────────────────────────
+CELERY_TASK_ACKS_LATE               = True     # ACK after execution — re-deliver on crash
+CELERY_WORKER_PREFETCH_MULTIPLIER   = 1        # Don't hoard tasks — fair distribution
+CELERY_TASK_REJECT_ON_WORKER_LOST   = True     # Re-queue if worker is killed
+CELERY_TASK_SOFT_TIME_LIMIT         = 120      # Raise SoftTimeLimitExceeded after 2 min
+CELERY_TASK_TIME_LIMIT              = 180      # Hard kill after 3 min
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True  # Retry Redis connection on startup
+CELERY_WORKER_MAX_TASKS_PER_CHILD   = 1000     # Restart worker after 1000 tasks (memory leak guard)
+CELERY_TASK_TRACK_STARTED           = True     # Track STARTED state in result backend
+CELERY_WORKER_SEND_TASK_EVENTS      = True     # Enable task monitoring events
+
 # ─── Celery Beat Schedule ─────────────────────────────────────────────────────
 from celery.schedules import crontab
 CELERY_BEAT_SCHEDULE = {

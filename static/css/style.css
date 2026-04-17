@@ -422,3 +422,24 @@ img { max-width: 100%; height: auto; }
   .reg-step-connector { width:36px; }
   .reg-step-label { font-size:9px; }
 }
+
+/* ── Live Conditions Pulse ─────────────────────────────────────── */
+.pulse-icon {
+  width: 10px;
+  height: 10px;
+  background: var(--nexura-success);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4);
+  animation: pulse-green 2s infinite;
+}
+@keyframes pulse-green {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+
+.condition-item {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}

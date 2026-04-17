@@ -23,8 +23,10 @@
             </p>
             <p class="mb-0 small text-muted">
                 {% if kyc_status == 'pending' %}Verify your Aadhaar to unlock full payout eligibility.{% endif %}
-                {% if kyc_status == 'submitted' or kyc_status == 'in_review' %}Usually verified within 24 hours.{% endif %}
-                {% if kyc_status == 'rejected' %}{{ request.user.kyc.rejection_reason|default:"Please resubmit your Aadhaar." }}{% endif %}
+                {% if kyc_status == 'submitted' or kyc_status == 'in_review' %}Usually verified within 24 hours.{% endif
+                %}
+                {% if kyc_status == 'rejected' %}{{ request.user.kyc.rejection_reason|default:"Please resubmit your
+                Aadhaar." }}{% endif %}
             </p>
         </div>
     </div>
@@ -35,6 +37,40 @@
     {% endif %}
 </div>
 {% endif %}
+
+{# ── Live Conditions ─────────────────────────────────────────────────── #}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="nexura-stat-card py-3 px-4 d-flex align-items-center justify-content-between flex-wrap gap-3"
+            style="background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%); border-left: 4px solid var(--nexura-primary);">
+            <div class="d-flex align-items-center gap-3">
+                <div class="pulse-icon"></div>
+                <h6 class="fw-bold mb-0">Live Zone Status: <span class="text-primary">{{ profile.zone.display_name
+                        }}</span></h6>
+            </div>
+            <div class="d-flex align-items-center gap-4">
+                <div class="condition-item">
+                    <i
+                        class="fas fa-thermometer-half me-2 {% if live_conditions.temp_ok %}text-success{% else %}text-danger{% endif %}"></i>
+                    <span class="fw-semibold">{{ live_conditions.temp }}</span>
+                    <small class="text-muted ms-1">Temp</small>
+                </div>
+                <div class="condition-item">
+                    <i
+                        class="fas fa-cloud-showers-heavy me-2 {% if live_conditions.rain_ok %}text-success{% else %}text-danger{% endif %}"></i>
+                    <span class="fw-semibold">{{ live_conditions.rain }}</span>
+                    <small class="text-muted ms-1">Rain</small>
+                </div>
+                <div class="condition-item">
+                    <i
+                        class="fas fa-wind me-2 {% if live_conditions.aqi_ok %}text-success{% else %}text-danger{% endif %}"></i>
+                    <span class="fw-semibold">{{ live_conditions.aqi }}</span>
+                    <small class="text-muted ms-1">AQI</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {# ── Stat Cards ─────────────────────────────────────────────────────── #}
 <div class="row g-4 mb-4">
@@ -54,10 +90,10 @@
             </div>
             <p class="text-muted mb-0" style="font-size:12px;">
                 {% if active_policy %}
-                    <span class="status-badge active">Active</span>
-                    {{ active_policy.plan_tier.name }}
+                <span class="status-badge active">Active</span>
+                {{ active_policy.plan_tier.name }}
                 {% else %}
-                    <a href="{% url 'policies:plans' %}" class="text-primary fw-semibold">Get Protected →</a>
+                <a href="{% url 'policies:plans' %}" class="text-primary fw-semibold">Get Protected →</a>
                 {% endif %}
             </p>
         </div>
@@ -94,19 +130,27 @@
     </div>
 
     <div class="col-6 col-lg-3">
-        <div class="nexura-stat-card">
-            <div class="d-flex align-items-center gap-3 mb-2">
-                <div class="stat-icon bg-orange-soft">
-                    <i class="fas fa-tachometer-alt"></i>
-                </div>
+        <div class="nexura-stat-card position-relative overflow-hidden">
+            <div class="d-flex justify-content-between align-items-start mb-2">
                 <div>
-                    <p class="stat-label mb-0">Risk Score</p>
+                    <p class="stat-label mb-0">Safety Score</p>
                     <p class="stat-value mb-0">{{ profile.risk_score|floatformat:2 }}</p>
                 </div>
+                <div class="stat-icon bg-orange-soft">
+                    <i class="fas fa-shield-virus"></i>
+                </div>
             </div>
-            <span class="status-badge {% if profile.risk_color == 'danger' %}rejected{% elif profile.risk_color == 'warning' %}pending{% else %}active{% endif %}">
-                {{ profile.risk_label }}
-            </span>
+            <div class="progress mt-2" style="height: 6px; background-color: #f1f5f9;">
+                <div class="progress-bar {% if profile.risk_color == 'red' %}bg-danger{% elif profile.risk_color == 'amber' %}bg-warning{% else %}bg-success{% endif %}"
+                    role="progressbar" style="width: {{ risk_percent }}%" aria-valuenow="{{ risk_percent }}"
+                    aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div class="d-flex justify-content-between mt-1">
+                <span class="text-muted small" style="font-size: 10px;">High Risk</span>
+                <span
+                    class="fw-bold {% if profile.risk_color == 'red' %}text-danger{% elif profile.risk_color == 'amber' %}text-warning{% else %}text-success{% endif %} small"
+                    style="font-size: 10px;">{{ profile.risk_label }}</span>
+            </div>
         </div>
     </div>
 
@@ -189,6 +233,43 @@
     {# Right column: claims, payouts, forecast #}
     <div class="col-lg-7">
 
+        {# Community & Circles #}
+        <div class="nexura-stat-card mb-4">
+            <h6 class="fw-bold mb-4 text-uppercase small text-muted d-flex align-items-center gap-2">
+                <i class="fas fa-users text-primary"></i> Community Activity
+            </h6>
+            <div class="row g-4 align-items-center">
+                <div class="col-md-7">
+                    <p class="mb-2 fw-semibold small">Nexura Network Strength</p>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="flex-fill"
+                            style="height: 10px; background: #f1f5f9; border-radius: 6px; overflow: hidden;">
+                            <div class="h-100 bg-primary" style="width: 82%; border-radius: 6px;"></div>
+                        </div>
+                        <span class="small fw-bold text-primary">82%</span>
+                    </div>
+                    <p class="text-muted mb-0" style="font-size: 12px;">
+                        There are <strong>{{ community.zone_workers_count|default:"142" }}</strong> protected workers in
+                        your zone.
+                        The network is currently stable.
+                    </p>
+                </div>
+                <div class="col-md-5 border-start">
+                    <div class="ps-md-3">
+                        <p class="mb-2 fw-semibold small">Risk Circle</p>
+                        <div class="d-flex align-items-baseline gap-2">
+                            <h3 class="fw-black mb-0">{{ community.circle_members_count|default:"0" }}</h3>
+                            <span class="text-muted small">/ {{ community.circle_max }} members</span>
+                        </div>
+                        <a href="{% url 'circles:my_circle' %}"
+                            class="text-primary p-0 mt-2 fw-bold text-decoration-none small d-inline-block">
+                            View Circle Details →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {# Weekly Forecast #}
         {% if zone_forecast %}
         <div class="nexura-stat-card mb-4">
@@ -204,7 +285,7 @@
                     <span class="forecast-day-label small text-muted">Rain</span>
                     <div class="forecast-bar-track">
                         <div class="forecast-bar-fill {% if zone_forecast.rain_probability > 0.6 %}high{% elif zone_forecast.rain_probability > 0.3 %}moderate{% else %}low{% endif %}"
-                             style="width:{{ zone_forecast.rain_probability|floatformat:0 }}0%"></div>
+                            style="width:{{ zone_forecast.rain_probability|floatformat:0 }}0%"></div>
                     </div>
                     <span class="text-muted small">{{ zone_forecast.rain_probability|floatformat:0 }}%</span>
                 </div>
@@ -212,7 +293,7 @@
                     <span class="forecast-day-label small text-muted">Heat</span>
                     <div class="forecast-bar-track">
                         <div class="forecast-bar-fill {% if zone_forecast.heat_probability > 0.6 %}high{% elif zone_forecast.heat_probability > 0.3 %}moderate{% else %}low{% endif %}"
-                             style="width:{{ zone_forecast.heat_probability|floatformat:0 }}0%"></div>
+                            style="width:{{ zone_forecast.heat_probability|floatformat:0 }}0%"></div>
                     </div>
                     <span class="text-muted small">{{ zone_forecast.heat_probability|floatformat:0 }}%</span>
                 </div>
@@ -220,12 +301,13 @@
                     <span class="forecast-day-label small text-muted">AQI</span>
                     <div class="forecast-bar-track">
                         <div class="forecast-bar-fill {% if zone_forecast.aqi_probability > 0.6 %}high{% elif zone_forecast.aqi_probability > 0.3 %}moderate{% else %}low{% endif %}"
-                             style="width:{{ zone_forecast.aqi_probability|floatformat:0 }}0%"></div>
+                            style="width:{{ zone_forecast.aqi_probability|floatformat:0 }}0%"></div>
                     </div>
                     <span class="text-muted small">{{ zone_forecast.aqi_probability|floatformat:0 }}%</span>
                 </div>
             </div>
-            <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top:1px solid #e2e8f0;">
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-3"
+                style="border-top:1px solid #e2e8f0;">
                 <span class="text-muted small">Overall risk this week</span>
                 <span class="forecast-risk-badge {{ zone_forecast.overall_risk_level|lower }}">
                     {{ zone_forecast.overall_risk_level }}
@@ -280,7 +362,8 @@
             {% else %}
             <div class="text-center py-4">
                 <i class="fas fa-file-invoice-dollar fa-2x text-muted mb-2"></i>
-                <p class="text-muted small mb-0">No claims yet. You'll see them here when a trigger fires in your zone.</p>
+                <p class="text-muted small mb-0">No claims yet. You'll see them here when a trigger fires in your zone.
+                </p>
             </div>
             {% endif %}
         </div>
@@ -330,12 +413,89 @@
             {% else %}
             <div class="text-center py-4">
                 <i class="fas fa-rupee-sign fa-2x text-muted mb-2"></i>
-                <p class="text-muted small mb-0">No payouts yet. When a trigger fires and your claim is approved, the payout appears here.</p>
+                <p class="text-muted small mb-0">No payouts yet. When a trigger fires and your claim is approved, the
+                    payout appears here.</p>
             </div>
             {% endif %}
         </div>
 
     </div>
 </div>
+
+{# ── Developer Mode ─────────────────────────────────────────────────── #}
+{% if debug %}
+<div class="row mt-5 mb-4">
+    <div class="col-12">
+        <div class="nexura-stat-card border-warning border-opacity-50" style="background-color: #fffaf0;">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="stat-icon bg-warning-soft">
+                    <i class="fas fa-flask text-warning"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">🧪 Developer Mode</h6>
+                    <p class="text-muted small mb-0">Simulate triggers and events for testing purposes.</p>
+                </div>
+            </div>
+
+            <form action="{% url 'workers:simulate_trigger' %}" method="POST" class="row g-3">
+                {% csrf_token %}
+                <div class="col-md-5">
+                    <label class="form-label small fw-bold">Trigger Type</label>
+                    <select name="trigger_type" class="form-select form-select-sm" required>
+                        <option value="heavy_rain">Heavy Rain (Rainfall)</option>
+                        <option value="extreme_heat">Extreme Heat (Temperature)</option>
+                        <option value="severe_aqi">Severe AQI (Air Quality)</option>
+                        <option value="flash_flood">Flash Flood</option>
+                        <option value="curfew_strike">Curfew or Strike</option>
+                        <option value="platform_down">Platform Down</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Severity Value</label>
+                    <input type="number" step="0.1" name="severity" class="form-control form-control-sm" value="120.0"
+                        required>
+                    <div class="form-text small" style="font-size: 10px;">Rain > 35mm, Heat > 42°C, AQI > 300</div>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-warning btn-sm w-100 fw-bold">
+                        <i class="fas fa-bolt me-1"></i> Simulate Event
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if last_simulation %}
+<div class="row g-4 mt-1 mb-4">
+    <div class="col-12">
+        <div class="nexura-stat-card border-primary border-opacity-50" style="background: rgba(1,95,201,0.02);">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h6 class="fw-bold text-primary mb-1">🧪 Last Simulation Result</h6>
+                    <p class="text-muted small mb-0">Type: <strong>{{ last_simulation.type }}</strong> | Time: {{
+                        last_simulation.time }} | Severity: {{ last_simulation.severity }}</p>
+                </div>
+                <a href="{% url 'workers:clear_simulation' %}" class="btn btn-sm btn-outline-secondary rounded-pill"
+                    style="font-size: 10px; padding: 2px 10px;">Clear Log</a>
+            </div>
+            <div class="simulation-steps mt-3">
+                {% for step in last_simulation.steps %}
+                <div class="d-flex gap-3 mb-2 align-items-center">
+                    <div class="text-primary small" style="width: 20px;"><i class="fas fa-check-circle"></i></div>
+                    <div class="small text-dark">{{ step }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="nexura-alert info py-2 px-3 mt-3"
+                style="font-size: 11px; border: 1px solid rgba(1,95,201,0.1);">
+                <i class="fas fa-info-circle me-1"></i> Claims take 5-10 seconds to generate. Refresh the page to see
+                them in the recent claims list.
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endif %}
 
 {% endblock %}

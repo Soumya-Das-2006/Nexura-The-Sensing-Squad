@@ -162,3 +162,50 @@ def worker_dashboard(request):
         'payouts':  payouts,
         'forecast': forecast,
     })
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def risk_score_detail(request):
+    """
+    GET /api/workers/risk-score/
+    Returns the current risk score and computed premium for the
+    authenticated worker.
+    """
+    from apps.pricing.risk_service import predict_risk_score, calculate_premium
+    from django.utils import timezone
+
+    try:
+        profile = request.user.workerprofile
+    except Exception:
+        return Response(
+            {"detail": "Worker profile not found."}, status=404
+        )
+
+    # Always recompute fresh score
+    score = predict_risk_score(profile)
+
+    # Save it
+    from apps.workers.models import WorkerProfile
+    WorkerProfile.objects.filter(pk=profile.pk).update(
+        risk_score=score,
+        risk_updated_at=timezone.now(),
+    )
+
+    # Calculate premium for active plan (if any)
+    premium = None
+    try:
+        policy = request.user.policies.filter(status="active").latest("start_date")
+        premium = calculate_premium(score, float(policy.plan.base_premium))
+    except Exception:
+        pass
+
+    return Response({
+        "risk_score":       score,
+        "risk_updated_at":  timezone.now().isoformat(),
+        "premium_estimate": premium,
+        "risk_label": (
+            "low"    if score < 0.33 else
+            "medium" if score < 0.66 else
+            "high"
+        ),
+    })

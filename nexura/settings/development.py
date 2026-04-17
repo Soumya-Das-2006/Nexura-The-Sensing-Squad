@@ -28,10 +28,12 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django': {'handlers': ['console'], 'level': 'INFO'},
-        'apps':   {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
-        'celery': {'handlers': ['console'], 'level': 'INFO'},
+        'django':        {'handlers': ['console'], 'level': 'INFO'},
+        'apps':          {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
+        'apps.triggers': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
+        'celery':        {'handlers': ['console'], 'level': 'INFO'},
     },
 }
+
 # Allow Django test client host
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'testserver', '*']

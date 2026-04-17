@@ -123,8 +123,6 @@
             </a>
         </li>
 
-        <li class="nav-item">
-            <a 
         {% if request.user.is_admin or request.user.is_staff or request.user.is_superuser %}
         <li class="nav-item" style="border-top: 1px solid rgba(255,255,255,0.1); margin-top:6px; padding-top:4px;">
             <a href="{% url 'admin_portal:dashboard' %}" class="nav-link">
@@ -133,7 +131,9 @@
             </a>
         </li>
         {% endif %}
-        <a href="{% url 'accounts:logout' %}" class="nav-link text-danger">
+
+        <li class="nav-item">
+            <a href="{% url 'accounts:logout' %}" class="nav-link text-danger">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>

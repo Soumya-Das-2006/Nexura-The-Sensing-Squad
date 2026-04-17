@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.utils import timezone
 
@@ -63,3 +64,24 @@ class DisruptionEvent(models.Model):
 		if not self.ended_at:
 			self.ended_at = timezone.now()
 			self.save(update_fields=["ended_at", "updated_at"])
+
+
+class PlatformDowntimeState(models.Model):
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	platform_name = models.CharField(max_length=50)
+	down_since = models.DateTimeField(default=timezone.now)
+	is_deleted = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		indexes = [
+			models.Index(fields=['platform_name', 'is_deleted']),
+		]
+
+	def __str__(self):
+		return f"{self.platform_name} down since {self.down_since}"
+
+	def soft_delete(self):
+		self.is_deleted = True
+		self.save(update_fields=['is_deleted', 'updated_at'])
