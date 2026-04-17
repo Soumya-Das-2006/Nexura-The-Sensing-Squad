@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import RegexValidator
 from django.db import models
 
 
@@ -36,7 +37,16 @@ class WorkerProfile(models.Model):
 		related_name="workers",
 	)
 
-	upi_id = models.CharField(max_length=100, blank=True)
+	upi_id = models.CharField(
+		max_length=100,
+		blank=True,
+		validators=[
+			RegexValidator(
+				regex=r'^[a-zA-Z0-9._-]+@[a-zA-Z]{2,}$',
+				message='Enter a valid UPI ID (e.g. name@upi, name@paytm, name@oksbi).',
+			)
+		],
+	)
 
 	risk_score = models.FloatField(default=0.0)
 	risk_updated_at = models.DateTimeField(null=True, blank=True)

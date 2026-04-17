@@ -285,25 +285,25 @@
                     <span class="forecast-day-label small text-muted">Rain</span>
                     <div class="forecast-bar-track">
                         <div class="forecast-bar-fill {% if zone_forecast.rain_probability > 0.6 %}high{% elif zone_forecast.rain_probability > 0.3 %}moderate{% else %}low{% endif %}"
-                            style="width:{{ zone_forecast.rain_probability|floatformat:0 }}0%"></div>
+                             style="width:{% widthratio zone_forecast.rain_probability 1 100 %}%"></div>
                     </div>
-                    <span class="text-muted small">{{ zone_forecast.rain_probability|floatformat:0 }}%</span>
+                    <span class="text-muted small">{% widthratio zone_forecast.rain_probability 1 100 %}%</span>
                 </div>
                 <div class="forecast-day-row">
                     <span class="forecast-day-label small text-muted">Heat</span>
                     <div class="forecast-bar-track">
                         <div class="forecast-bar-fill {% if zone_forecast.heat_probability > 0.6 %}high{% elif zone_forecast.heat_probability > 0.3 %}moderate{% else %}low{% endif %}"
-                            style="width:{{ zone_forecast.heat_probability|floatformat:0 }}0%"></div>
+                             style="width:{% widthratio zone_forecast.heat_probability 1 100 %}%"></div>
                     </div>
-                    <span class="text-muted small">{{ zone_forecast.heat_probability|floatformat:0 }}%</span>
+                    <span class="text-muted small">{% widthratio zone_forecast.heat_probability 1 100 %}%</span>
                 </div>
                 <div class="forecast-day-row">
                     <span class="forecast-day-label small text-muted">AQI</span>
                     <div class="forecast-bar-track">
                         <div class="forecast-bar-fill {% if zone_forecast.aqi_probability > 0.6 %}high{% elif zone_forecast.aqi_probability > 0.3 %}moderate{% else %}low{% endif %}"
-                            style="width:{{ zone_forecast.aqi_probability|floatformat:0 }}0%"></div>
+                             style="width:{% widthratio zone_forecast.aqi_probability 1 100 %}%"></div>
                     </div>
-                    <span class="text-muted small">{{ zone_forecast.aqi_probability|floatformat:0 }}%</span>
+                    <span class="text-muted small">{% widthratio zone_forecast.aqi_probability 1 100 %}%</span>
                 </div>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-3 pt-3"

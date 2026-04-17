@@ -370,7 +370,6 @@ def simulate_trigger(request):
     messages.success(request, f'Successfully simulated {trigger_type} trigger.')
     return redirect('workers:dashboard')
 
-
 @_worker_required
 def clear_simulation(request):
     """Developer tool: Clear the last simulation log from session."""

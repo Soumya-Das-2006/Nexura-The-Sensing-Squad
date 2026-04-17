@@ -17,7 +17,11 @@ env = environ.Env(
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # ─── Security ─────────────────────────────────────────────────────────────────
-SECRET_KEY = env('SECRET_KEY', default='django-insecure-nexura-default-key-change-me')
+_secret = env('SECRET_KEY', default='')
+if not _secret or 'change-me' in _secret or 'insecure' in _secret:
+    from django.core.management.utils import get_random_secret_key
+    _secret = get_random_secret_key()
+SECRET_KEY = _secret
 DEBUG = env('DEBUG', default=True)
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '0.0.0.0'])
 
@@ -169,6 +173,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon':  '30/minute',
+        'user':  '120/minute',
+    },
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,

@@ -1,0 +1,86 @@
+{% load static %}
+{% comment %}
+─── Language Switcher Component ────────────────────────────────────
+Includes:
+  • Desktop custom dropdown   (#tl-desktop-trigger / #tl-desktop-menu)
+  • Mobile bottom sheet       (#mobile-language-menu)
+  • Mobile overlay            (#tl-sheet-overlay)
+  • Translation loading bar   (#translation-loading)
+  • Error toast               (#tl-toast)
+  • TTS buttons               (#tts-toggle-desktop / #tts-toggle-mobile)
+
+Usage: include this partial in base.html once before closing body tag.
+Place once in base.html just before </body>
+{% endcomment %}
+
+<!-- ══════════════════════════════════════════════════════════════
+     Translation Loading Banner
+══════════════════════════════════════════════════════════════ -->
+<div id="translation-loading"
+     role="status"
+     aria-live="polite"
+     aria-label="Translation in progress">
+    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+    <span>Translating…</span>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Error Toast
+══════════════════════════════════════════════════════════════ -->
+<div id="tl-toast" role="alert" aria-live="assertive">
+    <i class="bi bi-exclamation-triangle-fill tl-toast-icon"></i>
+    <span class="tl-toast-msg"></span>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Mobile Bottom Sheet Overlay
+══════════════════════════════════════════════════════════════ -->
+<div id="tl-sheet-overlay"
+     class="tl-sheet-overlay"
+     aria-hidden="true"
+     tabindex="-1"></div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Mobile Bottom Sheet Panel
+══════════════════════════════════════════════════════════════ -->
+<div id="mobile-language-menu"
+     class="tl-sheet"
+     role="dialog"
+     aria-modal="true"
+     aria-label="Select language"
+     aria-hidden="true">
+
+    <!-- Handle -->
+    <div class="tl-sheet-handle" aria-hidden="true"></div>
+
+    <!-- Header -->
+    <div class="tl-sheet-header">
+        <span class="tl-sheet-title">
+            <i class="bi bi-translate me-2 text-primary"></i>Choose Language
+        </span>
+        <button id="tl-sheet-close"
+                class="tl-sheet-close"
+                aria-label="Close language selector">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <!-- Language grid — populated by translator.js -->
+    <div id="mobile-language-options"
+         class="tl-sheet-grid"
+         role="listbox"
+         aria-label="Available languages">
+        {# JS fills this at runtime #}
+    </div>
+
+    <!-- TTS footer -->
+    <div class="tl-sheet-footer">
+        <button id="tts-toggle-mobile"
+                class="tl-sheet-tts-btn tl-tts-btn"
+                aria-label="Read page aloud"
+                type="button">
+            <i class="bi bi-volume-up-fill"></i>
+            <span>Read Page Aloud</span>
+        </button>
+    </div>
+</div>

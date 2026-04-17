@@ -1,6 +1,7 @@
 # apps/core/urls.py
 from django.urls import path
 from . import views
+from . import translation_views
 
 app_name = 'core'
 
@@ -15,6 +16,9 @@ urlpatterns = [
     path('contact/',      views.ContactView.as_view(),     name='contact'),
     path('cities/',       views.CitiesView.as_view(),      name='cities'),
     path('privacy/',      views.PrivacyView.as_view(),     name='privacy'),
-    path('support/', views.support_list, name='support'),
+    path('support/',      views.support_list,              name='support'),
     path('terms/',        views.TermsView.as_view(),       name='terms'),
+
+    # ── Translation API ──────────────────────────────────────────────────────
+    path('translate/', translation_views.TranslateView.as_view(), name='translate'),
 ]

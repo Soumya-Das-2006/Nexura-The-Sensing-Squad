@@ -156,7 +156,7 @@
 <!-- ── Sidebar End ── -->
 
 <!-- ── Main Content ─────────────────────────────────────────────────── -->
-<div class="nexura-main-content">
+<div class="nexura-main-content translatable">
 
     <!-- Top bar -->
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3"
@@ -172,6 +172,36 @@
             </div>
         </div>
         <div class="d-flex align-items-center gap-3">
+            <!-- Language Switcher (dashboard) -->
+            <div class="tl-desktop-switcher d-none d-md-flex">
+                <button id="tl-desktop-trigger"
+                        class="tl-desktop-trigger btn btn-sm"
+                        type="button"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Select language"
+                        aria-controls="tl-desktop-menu">
+                    <i class="fas fa-globe tl-globe" aria-hidden="true"></i>
+                    <span id="tl-trigger-label">🇬🇧 English</span>
+                    <i class="bi bi-chevron-down tl-caret" aria-hidden="true"></i>
+                </button>
+                <div id="tl-desktop-menu" class="tl-desktop-menu" role="listbox" aria-label="Available languages">
+                    <div class="tl-menu-header">🌐 Select Language</div>
+                    <div class="tl-menu-scroll"></div>
+                    <div class="tl-menu-footer">
+                        <button id="tts-toggle-desktop" class="tl-tts-btn" type="button" aria-label="Read page aloud">
+                            <i class="bi bi-volume-up-fill"></i>
+                            <span>Read Aloud</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Mobile lang trigger -->
+            <button id="mobile-language-trigger" class="btn btn-light btn-sm d-md-none"
+                    type="button" aria-label="Select language">
+                <i class="fas fa-globe text-primary"></i>
+                <span id="tl-mobile-trigger-label" class="ms-1">🇬🇧</span>
+            </button>
             <!-- City / Zone badge -->
             {% if request.user.is_authenticated and request.user.is_worker %}
             <span class="badge bg-light text-dark border px-3 py-2" style="font-size: 12px;">
@@ -232,6 +262,7 @@
     <i class="fa fa-arrow-up"></i>
 </a>
 
+{% include "includes/_language_switcher.html" %}
 <!-- Floating AI Chatbot Widget -->
 {% include "includes/_chatbot_float.html" %}
 

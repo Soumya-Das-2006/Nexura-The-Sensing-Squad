@@ -231,14 +231,20 @@ def fire_test_trigger(request):
             f'✅ Test trigger fired: {event.get_trigger_type_display()} in {zone.display_name}. '
             f'Claims are being queued via Celery. Check the Claims list in a moment.')
     except Exception:
-        # Celery not running — create claims directly
+        # Celery not running — run the real pipeline synchronously
         from apps.policies.models import Policy
         from apps.claims.models import Claim
+        from apps.claims.pipeline import run_fraud_pipeline
+        from apps.payouts.tasks import disburse_payout
+
         policies = Policy.objects.filter(
             status='active',
             worker__workerprofile__zone=zone
-        ).select_related('worker','plan_tier')
+        ).select_related('worker', 'worker__workerprofile', 'plan_tier')
+
         created_count = 0
+        approved_count = 0
+
         for pol in policies:
             claim, created = Claim.objects.get_or_create(
                 worker=pol.worker,
@@ -246,19 +252,93 @@ def fire_test_trigger(request):
                 defaults={
                     'policy': pol,
                     'payout_amount': pol.weekly_coverage,
-                    'fraud_score': 0.15,
-                    'fraud_flags': [{'layer':1,'flag':'admin_test','detail':'Admin test trigger','score_contribution':0.0}],
                     'status': 'pending',
                 }
             )
-            if created:
-                created_count += 1
+            if not created:
+                continue
+
+            created_count += 1
+
+            # Run the REAL 6-layer fraud pipeline
+            result = run_fraud_pipeline(claim)
+            decision = result['decision']
+
+            claim.fraud_score = result['fraud_score']
+            claim.fraud_flags = result['flags']
+
+            if decision == 'approve':
+                claim.status = 'approved'
+                approved_count += 1
+                claim.save()
+                # Queue payout (synchronous in sandbox)
+                try:
+                    disburse_payout(claim.pk)
+                except Exception as pe:
+                    logger.warning("[fire_trigger] Payout failed for claim %s: %s", claim.pk, pe)
+            elif decision == 'hold':
+                claim.status = 'on_hold'
+                claim.save()
+            else:
+                claim.status = 'rejected'
+                claim.rejection_reason = result.get('rejection_reason', '')
+                claim.save()
+
         messages.success(request,
             f'✅ Trigger fired: {event.get_trigger_type_display()} in {zone.display_name}. '
-            f'{created_count} claim(s) created directly (Celery not running). '
-            f'Approve them in the Claims list.')
+            f'{created_count} claim(s) created, {approved_count} auto-approved '
+            f'(Celery not running — pipeline ran synchronously).')
 
     return redirect('admin_portal:claims')
+
+
+@_admin_required
+def kyc_approve(request, user_id):
+    """Admin approves a worker's KYC submission."""
+    if request.method != 'POST':
+        return redirect('admin_portal:workers')
+
+    from apps.accounts.models import KYCRecord
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    try:
+        user = User.objects.get(pk=user_id)
+        kyc = user.kyc
+    except (User.DoesNotExist, KYCRecord.DoesNotExist):
+        messages.error(request, 'Worker or KYC record not found.')
+        return redirect('admin_portal:workers')
+
+    kyc.status = 'approved'
+    kyc.verified_at = timezone.now()
+    kyc.remarks = request.POST.get('remarks', '')
+    kyc.save(update_fields=['status', 'verified_at', 'remarks'])
+    messages.success(request, f'KYC approved for {user.display_name}.')
+    return redirect('admin_portal:workers')
+
+
+@_admin_required
+def kyc_reject(request, user_id):
+    """Admin rejects a worker's KYC submission."""
+    if request.method != 'POST':
+        return redirect('admin_portal:workers')
+
+    from apps.accounts.models import KYCRecord
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    try:
+        user = User.objects.get(pk=user_id)
+        kyc = user.kyc
+    except (User.DoesNotExist, KYCRecord.DoesNotExist):
+        messages.error(request, 'Worker or KYC record not found.')
+        return redirect('admin_portal:workers')
+
+    kyc.status = 'rejected'
+    kyc.remarks = request.POST.get('remarks', 'Rejected by admin.')
+    kyc.save(update_fields=['status', 'remarks'])
+    messages.warning(request, f'KYC rejected for {user.display_name}.')
+    return redirect('admin_portal:workers')
 
 
 @_admin_required

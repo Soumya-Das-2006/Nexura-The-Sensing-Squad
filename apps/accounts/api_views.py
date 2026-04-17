@@ -70,8 +70,8 @@ def send_otp(request):
 
     response = {'message': f'OTP sent to +91 {mobile}.', 'mobile': mobile}
     if settings.OTP_TEST_MODE:
-        response['otp'] = settings.OTP_TEST_CODE
         response['test_mode'] = True
+        # NEVER include the OTP code in the response — use console logs only
     return Response(response)
 
 

@@ -74,7 +74,7 @@
                         <div class="d-flex align-items-center gap-2">
                             <div class="fraud-score-bar">
                                 <div class="fraud-score-fill {% if p.risk_score < 0.5 %}low{% elif p.risk_score < 0.75 %}medium{% else %}high{% endif %}"
-                                     style="width:{{ p.risk_score|floatformat:0 }}0%"></div>
+                                     style="width:{% widthratio p.risk_score 1 100 %}%"></div>
                             </div>
                             <span class="small">{{ p.risk_score|floatformat:2 }}</span>
                         </div>
