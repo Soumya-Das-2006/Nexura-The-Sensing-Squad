@@ -32,8 +32,13 @@ def _verify_signature(payload_bytes: bytes, signature: str) -> bool:
     """Return True if the X-Razorpay-Signature header is valid."""
     secret = settings.RAZORPAY_WEBHOOK_SECRET
     if not secret:
-        logger.warning("[webhook] RAZORPAY_WEBHOOK_SECRET not set — skipping verification.")
-        return True   # allow in sandbox/dev
+        if not settings.DEBUG:
+            logger.error("[webhook] RAZORPAY_WEBHOOK_SECRET not set in production — rejecting!")
+            return False
+        logger.warning(
+            "[webhook] ⚠️ RAZORPAY_WEBHOOK_SECRET not set — accepting unsigned webhook (DEBUG mode only)"
+        )
+        return True
     expected = hmac.new(
         secret.encode(), payload_bytes, hashlib.sha256
     ).hexdigest()

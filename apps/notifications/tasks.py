@@ -340,17 +340,32 @@ def send_admin_alert(alert_type: str, data: dict):
 def process_whatsapp_webhook(payload: dict):
     """
     Process incoming WhatsApp webhook messages (e.g. worker replies).
-    Currently logs only — extend to handle support queries.
+    Sends an auto-acknowledgement and logs the message for support follow-up.
     """
     try:
         entries = payload.get('entry', [])
         for entry in entries:
             for change in entry.get('changes', []):
                 value    = change.get('value', {})
-                messages = value.get('messages', [])
-                for msg in messages:
+                msgs     = value.get('messages', [])
+                for msg in msgs:
                     mobile  = msg.get('from', '')[2:]   # strip 91 prefix
                     text    = msg.get('text', {}).get('body', '')
                     logger.info("[WhatsApp] Incoming from +91%s: %s", mobile, text[:100])
+
+                    # Auto-reply with acknowledgement
+                    auto_reply = (
+                        "🙏 Thanks for your message! Our team has received it.\n\n"
+                        "For quick help:\n"
+                        "• Type *STATUS* to check your latest claim\n"
+                        "• Type *HELP* for support options\n"
+                        "• Or visit nexaura.in/support\n\n"
+                        "A support agent will respond within 24 hours."
+                    )
+                    try:
+                        whatsapp.send_text(mobile, auto_reply)
+                    except Exception as send_err:
+                        logger.warning("[WhatsApp] Auto-reply failed for %s: %s", mobile, send_err)
+
     except Exception as exc:
         logger.error("[WhatsApp webhook] Processing error: %s", exc)

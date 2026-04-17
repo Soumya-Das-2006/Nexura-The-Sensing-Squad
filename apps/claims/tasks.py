@@ -40,7 +40,6 @@ def process_pending_claims(self):
 
     events = DisruptionEvent.objects.filter(
         claims_generated=False,
-        is_full_trigger=True,   # only full triggers generate claims automatically
     ).select_related('zone').order_by('started_at')
 
     total_claims   = 0

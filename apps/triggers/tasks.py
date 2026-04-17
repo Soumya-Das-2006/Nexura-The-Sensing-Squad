@@ -174,8 +174,53 @@ def poll_aqi_all_zones(self):
 
 # ─── Task 3: Platform uptime polling ─────────────────────────────────────────
 
-# Track when each platform first went down (in-memory — resets on worker restart)
-_platform_down_since: dict[str, datetime] = {}
+# Track when each platform first went down
+# Uses Redis for persistence across worker restarts; falls back to in-memory dict
+_platform_down_fallback: dict[str, datetime] = {}
+
+PLATFORM_DOWN_KEY = "nexura:platform_down_since:{platform}"
+
+
+def _get_redis():
+    """Get a Redis connection for platform tracking."""
+    import redis as redis_client
+    return redis_client.from_url(
+        getattr(settings, 'REDIS_URL', '') or 'redis://localhost:6379/0',
+        decode_responses=True,
+    )
+
+
+def _get_platform_down_since(platform: str):
+    """Return the datetime when platform went down, or None."""
+    try:
+        r = _get_redis()
+        val = r.get(PLATFORM_DOWN_KEY.format(platform=platform))
+        return datetime.fromisoformat(val) if val else None
+    except Exception:
+        return _platform_down_fallback.get(platform)
+
+
+def _set_platform_down_since(platform: str, dt):
+    """Record that platform went down at dt. Expires in 12 hours."""
+    try:
+        r = _get_redis()
+        r.setex(
+            PLATFORM_DOWN_KEY.format(platform=platform),
+            43200,  # 12 hours TTL
+            dt.isoformat(),
+        )
+    except Exception:
+        _platform_down_fallback[platform] = dt
+
+
+def _clear_platform_down(platform: str):
+    """Mark platform as recovered."""
+    try:
+        r = _get_redis()
+        r.delete(PLATFORM_DOWN_KEY.format(platform=platform))
+    except Exception:
+        _platform_down_fallback.pop(platform, None)
+
 
 PLATFORM_STATUS_URLS = {
     'zomato':  'https://www.zomato.com/robots.txt',
@@ -208,11 +253,11 @@ def poll_platform_uptime(self):
             is_down = True
 
         if is_down:
-            if platform not in _platform_down_since:
-                _platform_down_since[platform] = now
+            if _get_platform_down_since(platform) is None:
+                _set_platform_down_since(platform, now)
                 logger.info("[platform_uptime] %s went down at %s", platform, now)
 
-            down_since  = _platform_down_since[platform]
+            down_since   = _get_platform_down_since(platform)
             minutes_down = (now - down_since).total_seconds() / 60
 
             is_trig, is_full, sev = evaluate_platform_downtime(minutes_down)
@@ -230,9 +275,9 @@ def poll_platform_uptime(self):
                         triggered += 1
         else:
             # Platform recovered — close open events
-            if platform in _platform_down_since:
+            if _get_platform_down_since(platform) is not None:
                 logger.info("[platform_uptime] %s recovered.", platform)
-                del _platform_down_since[platform]
+                _clear_platform_down(platform)
 
                 DisruptionEvent.objects.filter(
                     trigger_type='platform_down',

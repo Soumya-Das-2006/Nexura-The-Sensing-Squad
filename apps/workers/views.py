@@ -251,7 +251,10 @@ def kyc_submit(request):
     kyc.submitted_at = timezone.now()
     kyc.save()
 
-    # TODO Step 5 extension: trigger real Aadhaar OTP verification via UIDAI
+    # Aadhaar is PBKDF2-hashed and stored. Status set to 'submitted' for admin review.
+    # UIDAI Aadhaar OTP verification is not available in sandbox.
+    # In production, integrate DigiLocker or UIDAI e-KYC API here before auto-approving.
+    logger.info("[KYC] Aadhaar submitted for user %s — awaiting admin review.", request.user.mobile)
     messages.success(
         request,
         'KYC submitted successfully. Verification usually completes within 24 hours.'
@@ -309,21 +312,33 @@ def simulate_trigger(request):
         worker=user,
         disruption_event=event,
         defaults={
-            'policy':      policy,
+            'policy': policy,
             'payout_amount': policy.weekly_coverage,
-            'fraud_score': 0.12,
-            'fraud_flags': [{'layer':1,'flag':'dev_simulate','detail':'Simulated trigger — dev mode','score_contribution':0.0}],
-            'status':      'pending',
+            'status': 'pending',
         }
     )
 
     if created:
-        messages.success(
-            request,
-            f'✅ Test claim #{claim.pk} created! Trigger: {event.get_trigger_type_display()} '
-            f'in {profile.zone.display_name}. Fraud score: 0.12 (below 0.50 threshold). '
-            f'Ask an admin to approve it, or it will auto-approve when Celery runs.'
-        )
+        # Run the REAL fraud pipeline, not a hardcoded score
+        from apps.claims.pipeline import run_fraud_pipeline
+        result = run_fraud_pipeline(claim)
+        claim.fraud_score = result['fraud_score']
+        claim.fraud_flags = result['flags']
+        claim.status = {'approve': 'approved', 'hold': 'on_hold', 'reject': 'rejected'}[result['decision']]
+        if result['decision'] == 'reject':
+            claim.rejection_reason = result.get('rejection_reason', '')
+        claim.save()
+
+        if result['decision'] == 'approve':
+            from apps.payouts.tasks import disburse_payout
+            try:
+                disburse_payout(claim.pk)
+            except Exception as pe:
+                logger.warning("Payout dispatch failed: %s", pe)
+
+        messages.success(request,
+            f'✅ Claim #{claim.pk} created! Fraud score: {claim.fraud_score:.3f}. '
+            f'Status: {claim.get_status_display()}')
     else:
         messages.info(request, f'A claim for this event already exists (#{claim.pk}).')
 

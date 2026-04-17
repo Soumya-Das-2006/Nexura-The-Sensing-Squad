@@ -48,6 +48,7 @@ urlpatterns = [
 
     # API health check
     path('api/v1/health/', include('apps.core.health_urls')),
+    path('health/', include('apps.core.health_urls')),
 
     # API docs
     path('api/v1/schema/',  SpectacularAPIView.as_view(),     name='schema'),

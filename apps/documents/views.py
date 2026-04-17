@@ -14,8 +14,21 @@ _login = login_required(login_url='accounts:login')
 def income_dna(request):
     if not request.user.is_worker:
         return redirect('core:home')
+
+    # Gate: IncomeDNA is a Premium-only feature
+    active_policy = None
+    try:
+        active_policy = request.user.policies.filter(status='active').latest('start_date')
+    except Exception:
+        pass
+
+    is_premium = active_policy and active_policy.plan_tier.slug == 'premium'
     docs = IncomeDNADocument.objects.filter(worker=request.user).order_by('-created_at')[:5]
-    return render(request, 'documents/income_dna.html', {'docs': docs})
+    return render(request, 'documents/income_dna.html', {
+        'docs': docs,
+        'is_premium': is_premium,
+        'active_policy': active_policy,
+    })
 
 
 @_login

@@ -372,7 +372,7 @@ Retry on failure: every 1 hour (retry_failed_payouts, max 3 attempts)
 
 ### 🔐 Worker Onboarding
 - Mobile OTP registration (6-digit, 30s countdown, paste support)
-- Aadhaar KYC with SHA-256 hashing (no plaintext storage)
+- Aadhaar KYC with PBKDF2-HMAC-SHA256 hashing (no plaintext storage)
 - Zone selection grouped by city (73 zones, 7 cities)
 - UPI ID setup with instant validation
 
@@ -750,7 +750,7 @@ WAQI_API_KEY=
 ### For Workers
 
 1. **Register** at `/register/` using your mobile number (OTP verification)
-2. **Verify KYC** — submit Aadhaar number (SHA-256 hashed, never stored plaintext)
+2. **Verify KYC** — submit Aadhaar number (PBKDF2-HMAC-SHA256 hashed, never stored plaintext)
 3. **Set up profile** — choose delivery platform, city, zone, and UPI ID
 4. **Select a plan** — Basic ₹29 / Standard ₹49 / Premium ₹79 per week
 5. **Activate via Razorpay** — Autopay mandate set up once, deducted every Monday

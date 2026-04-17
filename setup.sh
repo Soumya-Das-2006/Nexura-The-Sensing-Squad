@@ -35,21 +35,7 @@ echo "  ✓ Database ready"
 # 5. Load seed data
 echo ""
 echo "▶ Loading seed data..."
-python manage.py loaddata fixtures/zones.json fixtures/plans.json fixtures/risk_circles.json
-echo "  ✓ 73 zones, 3 plans, 14 risk circles loaded"
-
-# 6. Create superuser
-echo ""
-echo "▶ Creating demo admin user..."
-python manage.py shell -c "
-from apps.accounts.models import User
-if not User.objects.filter(mobile='9000000000').exists():
-    User.objects.create_superuser(mobile='9000000000', password='nexura@demo123', is_admin=True)
-    print('  ✓ Admin created: mobile=9000000000, password=nexura@demo123')
-else:
-    print('  ✓ Admin already exists (9000000000)')
-"
-
+bash fixtures/load_all.sh
 echo ""
 echo "✅ Setup complete!"
 echo ""
